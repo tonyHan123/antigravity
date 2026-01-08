@@ -1,0 +1,135 @@
+.title {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-xl);
+    text-align: center;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-2xl);
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.card {
+    background: white;
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-sm);
+    height: fit-content;
+}
+
+.cardTitle {
+    font-size: 1.25rem;
+    margin-bottom: var(--spacing-lg);
+    font-family: var(--font-serif);
+}
+
+.summaryItem {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+    font-size: 0.95rem;
+}
+
+.label {
+    color: var(--text-secondary);
+}
+
+.value {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-align: right;
+}
+
+.divider {
+    height: 1px;
+    background: var(--bg-secondary);
+    margin: var(--spacing-md) 0;
+}
+
+.total {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-top: var(--spacing-md);
+}
+
+.formSection {
+    padding: var(--spacing-md);
+}
+
+.inputGroup {
+    margin-bottom: var(--spacing-md);
+}
+
+.inputGroup label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-family: var(--font-sans);
+}
+
+.paymentBox {
+    background: var(--bg-secondary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.cardInputWrapper {
+    position: relative;
+}
+
+.cardIcon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+.cardInputWrapper input {
+    padding-left: 40px;
+}
+
+.row {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.row .inputGroup {
+    flex: 1;
+}
+
+.secureText {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: var(--spacing-md);
+}
+
+@media (max-width: 768px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        order: -1;
+        /* Show summary first on mobile? Or user details first? Usually details first or summary collapsed. Let's keep summary on top. */
+    }
+}
