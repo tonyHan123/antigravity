@@ -4,11 +4,11 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-    secret: "k-beauty-platform-secret-key-2026",
+    secret: process.env.AUTH_SECRET || "k-beauty-platform-secret-key-2026",
     providers: [
         Google({
-            clientId: "73545371708-1ome19i3j8so0anh1joi15dkvdcpg8dd.apps.googleusercontent.com",
-            clientSecret: "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"
+            clientId: process.env.GOOGLE_CLIENT_ID || "",
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || ""
         }),
         Credentials({
             name: "credentials",
@@ -23,7 +23,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 let role = 'user';
                 let shopId = undefined;
 
-                if (email === 'phdddblack@gmail.com') {
+                if (email === 'phdddblack@gmail.com' || email === 'admin@kbeauty.com') {
                     role = 'admin';
                 } else if (email === 'owner@shop1.com') {
                     role = 'owner';

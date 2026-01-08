@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { auth } from "@/auth";
+import { AuthProvider } from "@/components/providers/AuthProvider";
+import { WishlistProvider } from "@/components/providers/WishlistProvider";
+import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,19 +25,27 @@ export const metadata: Metadata = {
   description: "Book premium hair, nail, massage, and makeup services in Korea.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="en">
       <body className={`${inter.variable} ${playfair.variable}`}>
-        <Navbar />
-        <main style={{ minHeight: 'calc(100vh - 80px - 300px)' }}> {/* Approx height of nav + footer */}
-          {children}
-        </main>
-        <Footer />
+        <AuthProvider session={session}>
+          <LanguageProvider>
+            <WishlistProvider>
+              <Navbar />
+              <main style={{ minHeight: 'calc(100vh - 80px - 300px)' }}>
+                {children}
+              </main>
+              <Footer />
+            </WishlistProvider>
+          </LanguageProvider>
+        </AuthProvider>
       </body>
     </html>
   );
