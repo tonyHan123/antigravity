@@ -17,7 +17,7 @@ export default function LoginPage() {
             await signIn("credentials", {
                 email,
                 password,
-                callbackUrl: "/admin",
+                callbackUrl: "/my-page", // Redirect to My Page dashboard
             });
         } catch (error) {
             console.error("Login error:", error);
@@ -27,7 +27,7 @@ export default function LoginPage() {
     };
 
     const handleGoogleLogin = () => {
-        signIn("google", { callbackUrl: "/" });
+        signIn("google", { callbackUrl: "/my-page" });
     };
 
     return (
@@ -87,21 +87,21 @@ export default function LoginPage() {
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => signIn("credentials", { email: "user@example.com", password: "123", callbackUrl: "/" })}
+                        onClick={() => signIn("credentials", { email: "user@example.com", password: "123", callbackUrl: "/my-page" })}
                     >
                         User Demo
                     </Button>
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => signIn("credentials", { email: "owner@shop1.com", password: "123", callbackUrl: "/admin" })}
+                        onClick={() => signIn("credentials", { email: "owner@shop1.com", password: "123", callbackUrl: "/my-page" })}
                     >
                         Owner Demo
                     </Button>
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => signIn("credentials", { email: "phdddblack@gmail.com", password: "123", callbackUrl: "/admin" })}
+                        onClick={() => signIn("credentials", { email: "phdddblack@gmail.com", password: "123", callbackUrl: "/my-page" })}
                     >
                         Admin Demo
                     </Button>

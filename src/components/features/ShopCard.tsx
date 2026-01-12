@@ -1,13 +1,18 @@
+'use client';
+
 import Link from 'next/link';
 import { Star, MapPin } from 'lucide-react';
 import { Shop } from '@/types';
 import styles from './ShopCard.module.css';
+import { useLanguage } from '@/components/providers/LanguageProvider';
 
 interface ShopCardProps {
     shop: Shop;
 }
 
 export default function ShopCard({ shop }: ShopCardProps) {
+    const { getL } = useLanguage();
+
     return (
         <Link href={`/shop/${shop.id}`} className={styles.card}>
             <div className={styles.imageWrapper}>
@@ -20,7 +25,7 @@ export default function ShopCard({ shop }: ShopCardProps) {
 
             <div className={styles.content}>
                 <div className={styles.header}>
-                    <h3 className={styles.name}>{shop.name}</h3>
+                    <h3 className={styles.name}>{getL(shop.name)}</h3>
                     <div className={styles.rating}>
                         <Star size={14} fill="currentColor" className="text-gold" />
                         <span>{shop.rating}</span>
@@ -30,10 +35,10 @@ export default function ShopCard({ shop }: ShopCardProps) {
 
                 <div className={styles.meta}>
                     <MapPin size={14} />
-                    <span>{shop.region}</span>
+                    <span>{getL(shop.region)}</span>
                 </div>
 
-                <p className={styles.description}>{shop.description}</p>
+                <p className={styles.description}>{getL(shop.description)}</p>
 
                 <div className={styles.footer}>
                     <span className={styles.price}>From ₩{shop.services[0]?.price.toLocaleString()}</span>

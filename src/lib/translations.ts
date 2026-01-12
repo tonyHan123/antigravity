@@ -23,6 +23,22 @@ export const translations = {
                 makeup: 'Makeup Studio',
             },
         },
+        booking: {
+            title: 'Book Appointment',
+            selectService: 'Select Service',
+            proceed: 'Proceed to Book'
+        },
+        search: {
+            location: 'Location',
+            anywhere: 'Anywhere in Korea',
+            service: 'Service',
+            allServices: 'All Services',
+            hairSalon: 'Hair Salon',
+            nailArt: 'Nail Art',
+            massageSpa: 'Massage & Spa',
+            makeupStyling: 'Makeup & Styling',
+            searchButton: 'Search'
+        },
         footer: {
             company: 'Company',
             about: 'About Us',
@@ -57,6 +73,22 @@ export const translations = {
                 massage: 'マッサージ＆スパ',
                 makeup: 'メイクスタジオ',
             },
+        },
+        booking: {
+            title: '予約する',
+            selectService: 'サービスを選択',
+            proceed: '予約に進む'
+        },
+        search: {
+            location: '地域',
+            anywhere: '韓国全土',
+            service: 'サービス',
+            allServices: 'すべてのサービス',
+            hairSalon: 'ヘアサロン',
+            nailArt: 'ネイルアート',
+            massageSpa: 'マッサージ＆スパ',
+            makeupStyling: 'メイク＆スタイリング',
+            searchButton: '検索'
         },
         footer: {
             company: '会社情報',
@@ -93,6 +125,22 @@ export const translations = {
                 makeup: '化妆工作室',
             },
         },
+        booking: {
+            title: '预约服务',
+            selectService: '选择服务',
+            proceed: '继续预订'
+        },
+        search: {
+            location: '地点',
+            anywhere: '韩国各地',
+            service: '服务',
+            allServices: '所有服务',
+            hairSalon: '美发店',
+            nailArt: '美甲店',
+            massageSpa: '按摩与水疗',
+            makeupStyling: '化妆与造型',
+            searchButton: '搜索'
+        },
         footer: {
             company: '公司信息',
             about: '关于我们',
@@ -128,6 +176,22 @@ export const translations = {
                 makeup: 'Studio Makeup',
             },
         },
+        booking: {
+            title: 'Pesan Janji Temu',
+            selectService: 'Pilih Layanan',
+            proceed: 'Lanjut ke Pemesanan'
+        },
+        search: {
+            location: 'Lokasi',
+            anywhere: 'Di mana saja di Korea',
+            service: 'Layanan',
+            allServices: 'Semua Layanan',
+            hairSalon: 'Salon Rambut',
+            nailArt: 'Seni Kuku',
+            massageSpa: 'Pijat & Spa',
+            makeupStyling: 'Riasan & Penataan',
+            searchButton: 'Cari'
+        },
         footer: {
             company: 'Perusahaan',
             about: 'Tentang Kami',
@@ -162,6 +226,22 @@ export const translations = {
                 massage: 'मसाज और स्पा',
                 makeup: 'मेकअप स्टूडियो',
             },
+        },
+        booking: {
+            title: 'अपॉइंटमेंट बुक करें',
+            selectService: 'सेवा चुनें',
+            proceed: 'बुकिंग के लिए आगे बढ़ें'
+        },
+        search: {
+            location: 'स्थान',
+            anywhere: 'कोरिया में कहीं भी',
+            service: 'सेवा',
+            allServices: 'सभी सेवाएँ',
+            hairSalon: 'हेयर सैलून',
+            nailArt: 'नेल आर्ट',
+            massageSpa: 'मालिश और स्पा',
+            makeupStyling: 'मेकअप और स्टाइलिंग',
+            searchButton: 'खोजें'
         },
         footer: {
             company: 'कंपनी',

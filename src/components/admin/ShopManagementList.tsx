@@ -37,7 +37,7 @@ export default function ShopManagementList() {
                 <tbody>
                     {shops.map((s: any) => (
                         <tr key={s.id} style={{ borderBottom: '1px solid #f5f5f5' }}>
-                            <td style={{ padding: 12 }}><strong>{s.name}</strong></td>
+                            <td style={{ padding: 12 }}><strong>{typeof s.name === 'string' ? s.name : s.name.en}</strong></td>
                             <td style={{ padding: 12 }}>{typeof s.region === 'string' ? s.region : s.region.en}</td>
                             <td style={{ padding: 12 }}>
                                 <span style={{

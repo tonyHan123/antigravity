@@ -21,6 +21,9 @@ function CheckoutContent() {
     const shop = MOCK_SHOPS.find(s => s.id === shopId);
     const service = shop?.services.find(s => s.id === serviceId);
 
+    // Helper
+    const getL = (val: any) => typeof val === 'string' ? val : (val?.en || val?.ko || '');
+
     if (!shop || !service || !date || !time) {
         return <div className="container">Invalid booking details.</div>;
     }
@@ -42,16 +45,16 @@ function CheckoutContent() {
                     <h2 className={styles.cardTitle}>Booking Summary</h2>
                     <div className={styles.summaryItem}>
                         <span className={styles.label}>Shop</span>
-                        <span className={styles.value}>{shop.name}</span>
+                        <span className={styles.value}>{getL(shop.name)}</span>
                     </div>
                     <div className={styles.summaryItem}>
                         <span className={styles.label}>Location</span>
-                        <span className={styles.value}><MapPin size={14} /> {shop.region}</span>
+                        <span className={styles.value}><MapPin size={14} /> {getL(shop.region)}</span>
                     </div>
                     <div className={styles.divider} />
                     <div className={styles.summaryItem}>
                         <span className={styles.label}>Service</span>
-                        <span className={styles.value}>{service.name}</span>
+                        <span className={styles.value}>{getL(service.name)}</span>
                     </div>
                     <div className={styles.summaryItem}>
                         <span className={styles.label}>Date & Time</span>
@@ -59,6 +62,20 @@ function CheckoutContent() {
                             <Calendar size={14} /> {date} <Clock size={14} style={{ marginLeft: 6 }} /> {time}
                         </span>
                     </div>
+
+                    {/* Coupon Section */}
+                    <div className={styles.divider} />
+                    <div className={styles.summaryItem} style={{ alignItems: 'center' }}>
+                        <span className={styles.label}>Discount</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <select className={styles.select} style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #ddd', fontSize: '0.85rem' }}>
+                                <option value="">Select Coupon</option>
+                                <option value="summer">Summer Special 10%</option>
+                                <option value="welcome">Welcome Coupon ₩5,000</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div className={styles.divider} />
                     <div className={`${styles.summaryItem} ${styles.total}`}>
                         <span className={styles.label}>Total Price</span>

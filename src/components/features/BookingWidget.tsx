@@ -18,6 +18,13 @@ export default function BookingWidget({ shopId, services }: BookingWidgetProps) 
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
 
+    // Helper for localized strings
+    const getL = (val: any) => {
+        if (!val) return '';
+        if (typeof val === 'string') return val;
+        return val.en || val.ko || '';
+    };
+
     const handleBook = () => {
         if (!selectedService || !date || !time) return;
 
@@ -45,7 +52,7 @@ export default function BookingWidget({ shopId, services }: BookingWidgetProps) 
                             onClick={() => setSelectedService(srv.id)}
                         >
                             <div className={styles.serviceInfo}>
-                                <span className={styles.serviceName}>{srv.name}</span>
+                                <span className={styles.serviceName}>{getL(srv.name)}</span>
                                 <span className={styles.servicePrice}>₩{srv.price.toLocaleString()}</span>
                             </div>
                             {selectedService === srv.id && <Check size={16} className="text-gold" />}

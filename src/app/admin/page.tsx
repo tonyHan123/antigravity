@@ -31,8 +31,8 @@ export default async function PartnerDashboard() {
         // In a real app we would fetch the user from DB. Here we just use the name from session if it matches or "Guest"
         return {
             ...b,
-            shopName: shop?.name,
-            serviceName: service?.name,
+            shopName: typeof shop?.name === 'string' ? shop.name : shop?.name?.en,
+            serviceName: typeof service?.name === 'string' ? service.name : service?.name?.en,
             // For demo, just show fixed name, but in real DB you'd join User table
             userName: b.userId === 'user-guest' ? 'Foreign Visitor' : 'Registered User'
         };

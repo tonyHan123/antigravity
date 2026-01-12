@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer";
 import { auth } from "@/auth";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { WishlistProvider } from "@/components/providers/WishlistProvider";
+import { CouponProvider } from "@/components/providers/CouponProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import "./globals.css";
 
@@ -38,11 +39,13 @@ export default async function RootLayout({
         <AuthProvider session={session}>
           <LanguageProvider>
             <WishlistProvider>
-              <Navbar />
-              <main style={{ minHeight: 'calc(100vh - 80px - 300px)' }}>
-                {children}
-              </main>
-              <Footer />
+              <CouponProvider>
+                <Navbar />
+                <main style={{ minHeight: 'calc(100vh - 80px - 300px)' }}>
+                  {children}
+                </main>
+                <Footer />
+              </CouponProvider>
             </WishlistProvider>
           </LanguageProvider>
         </AuthProvider>

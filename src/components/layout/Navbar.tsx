@@ -1,6 +1,7 @@
 
 import Link from 'next/link';
 import UserButton from '@/components/layout/UserButton';
+import LanguageSelector from '@/components/features/LanguageSelector';
 import Button from '@/components/ui/Button';
 import styles from './Navbar.module.css';
 
@@ -19,10 +20,11 @@ export default function Navbar() {
                     <Link href="/search?category=Makeup">Makeup</Link>
                 </div>
                 <div className={styles.actions}>
+                    <LanguageSelector />
                     <UserButton />
-                    <Link href="/admin">
+                    <Link href="/my-page">
                         <Button variant="outline" size="sm">
-                            Partner
+                            Partner / Admin
                         </Button>
                     </Link>
                 </div>
