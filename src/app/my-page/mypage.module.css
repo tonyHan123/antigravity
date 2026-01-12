@@ -137,6 +137,19 @@
     border-radius: var(--radius-md);
 }
 
+.adminDashboard,
+.ownerDashboard {
+    background: white;
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.bookingSection {
+    border-top: 1px dashed #ddd;
+    padding-top: var(--spacing-xl);
+}
+
 @media (max-width: 768px) {
     .layout {
         flex-direction: column;
