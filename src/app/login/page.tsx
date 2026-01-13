@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { useState } from "react";
 import Button from "@/components/ui/Button";
 import styles from "./login.module.css";
@@ -10,14 +10,20 @@ export default function LoginPage() {
     const [password, setPassword] = useState("1234");
     const [isLoading, setIsLoading] = useState(false);
 
+    // Helper: Always sign out before signing in to ensure fresh session
+    const forceSignIn = async (provider: string, options: any) => {
+        await signOut({ redirect: false }); // Clear old session first
+        await signIn(provider, options);
+    };
+
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            await signIn("credentials", {
+            await forceSignIn("credentials", {
                 email,
                 password,
-                callbackUrl: "/my-page", // Redirect to My Page dashboard
+                callbackUrl: "/my-page",
             });
         } catch (error) {
             console.error("Login error:", error);
@@ -26,8 +32,23 @@ export default function LoginPage() {
         }
     };
 
-    const handleGoogleLogin = () => {
-        signIn("google", { callbackUrl: "/my-page" });
+    const handleGoogleLogin = async () => {
+        await forceSignIn("google", { callbackUrl: "/my-page" });
+    };
+
+    const handleDemoLogin = async (demoEmail: string) => {
+        setIsLoading(true);
+        try {
+            await forceSignIn("credentials", {
+                email: demoEmail,
+                password: "123",
+                callbackUrl: "/my-page",
+            });
+        } catch (error) {
+            console.error("Demo login error:", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -87,21 +108,24 @@ export default function LoginPage() {
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => signIn("credentials", { email: "user@example.com", password: "123", callbackUrl: "/my-page" })}
+                        onClick={() => handleDemoLogin("user@example.com")}
+                        disabled={isLoading}
                     >
                         User Demo
                     </Button>
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => signIn("credentials", { email: "owner@shop1.com", password: "123", callbackUrl: "/my-page" })}
+                        onClick={() => handleDemoLogin("owner@shop1.com")}
+                        disabled={isLoading}
                     >
                         Owner Demo
                     </Button>
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => signIn("credentials", { email: "phdddblack@gmail.com", password: "123", callbackUrl: "/my-page" })}
+                        onClick={() => handleDemoLogin("admin@example.com")}
+                        disabled={isLoading}
                     >
                         Admin Demo
                     </Button>

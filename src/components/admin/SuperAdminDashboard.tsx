@@ -8,9 +8,10 @@ import UserManagement from './UserManagement';
 import ShopManagementList from './ShopManagementList';
 import SettlementManager from './SettlementManager';
 import ModerationManager from './ModerationManager';
+import AdminMessagesTab from './tabs/AdminMessagesTab';
 
 export default function SuperAdminDashboard() {
-    const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'shops' | 'settlement' | 'moderation'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'shops' | 'settlement' | 'moderation' | 'messages'>('overview');
 
     return (
         <div className={styles.container}>
@@ -36,6 +37,9 @@ export default function SuperAdminDashboard() {
                     <button className={activeTab === 'moderation' ? styles.active : ''} onClick={() => setActiveTab('moderation')}>
                         <AlertCircle size={18} /> Moderation
                     </button>
+                    <button className={activeTab === 'messages' ? styles.active : ''} onClick={() => setActiveTab('messages')}>
+                        <Store size={18} /> Messages
+                    </button>
                 </nav>
             </aside>
 
@@ -47,6 +51,7 @@ export default function SuperAdminDashboard() {
                         {activeTab === 'shops' && 'Shop Partners'}
                         {activeTab === 'settlement' && 'Settlement Center'}
                         {activeTab === 'moderation' && 'Content Moderation'}
+                        {activeTab === 'messages' && 'Message Center'}
                     </h1>
                     <div className={styles.userMenu}>Super Admin</div>
                 </header>
@@ -57,6 +62,7 @@ export default function SuperAdminDashboard() {
                     {activeTab === 'shops' && <ShopManagementList />}
                     {activeTab === 'settlement' && <SettlementManager />}
                     {activeTab === 'moderation' && <ModerationManager />}
+                    {activeTab === 'messages' && <AdminMessagesTab />}
                 </div>
             </main>
         </div>

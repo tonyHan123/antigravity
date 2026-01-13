@@ -15,7 +15,7 @@ export default function SearchWidget() {
 
     const handleSearch = () => {
         const params = new URLSearchParams();
-        if (region) params.append('region', region);
+        if (region) params.append('location', region);
         if (category) params.append('category', category);
         router.push(`/search?${params.toString()}`);
     };

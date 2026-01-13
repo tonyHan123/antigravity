@@ -4,36 +4,109 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense, useState, useEffect } from 'react';
 import { CreditCard, Calendar, Clock, MapPin } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import { MOCK_SHOPS, MOCK_USER } from '@/lib/mockData';
+import { getShop, Shop, createBooking } from '@/lib/api';
 import styles from './checkout.module.css';
+import { useSession } from 'next-auth/react';
 
 function CheckoutContent() {
     const router = useRouter();
+    const { data: session } = useSession();
     const searchParams = useSearchParams();
     const shopId = searchParams.get('shopId');
     const serviceId = searchParams.get('serviceId');
     const date = searchParams.get('date');
     const time = searchParams.get('time');
 
+    const [shop, setShop] = useState<Shop | null>(null);
+    const [loading, setLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // Find Data
-    const shop = MOCK_SHOPS.find(s => s.id === shopId);
-    const service = shop?.services.find(s => s.id === serviceId);
-
     // Helper
-    const getL = (val: any) => typeof val === 'string' ? val : (val?.en || val?.ko || '');
+    const getL = (val: { en: string; jp?: string; cn?: string } | string | undefined) => {
+        if (!val) return '';
+        if (typeof val === 'string') return val;
+        return val.en || '';
+    };
+
+    useEffect(() => {
+        async function fetchShop() {
+            if (!shopId) return;
+            try {
+                const data = await getShop(shopId);
+                setShop(data);
+            } catch (error) {
+                console.error('Failed to fetch shop:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchShop();
+    }, [shopId]);
+
+    if (loading) {
+        return <div className="container" style={{ padding: '60px 20px', textAlign: 'center' }}>Loading...</div>;
+    }
+
+    const service = shop?.services?.find(s => s.id === serviceId);
 
     if (!shop || !service || !date || !time) {
-        return <div className="container">Invalid booking details.</div>;
+        return (
+            <div className="container" style={{ padding: '60px 20px', textAlign: 'center' }}>
+                <h2>Invalid booking details</h2>
+                <p style={{ marginTop: 16, color: '#666' }}>
+                    Please go back and select a service, date, and time.
+                </p>
+                <Button onClick={() => router.back()} style={{ marginTop: 24 }}>
+                    Go Back
+                </Button>
+            </div>
+        );
     }
+
+    const [selectedCouponId, setSelectedCouponId] = useState<string>('');
+
+    // Calculate totals
+    const servicePrice = service?.price || 0;
+    const selectedCoupon = shop?.coupons?.find(c => c.id === selectedCouponId);
+
+    let discountAmount = 0;
+    if (selectedCoupon) {
+        if (selectedCoupon.discount_type === 'percent') {
+            discountAmount = Math.floor(servicePrice * (selectedCoupon.discount_value / 100));
+        } else {
+            discountAmount = selectedCoupon.discount_value;
+        }
+    }
+
+    // Ensure total price is not negative
+    const totalPrice = Math.max(0, servicePrice - discountAmount);
 
     const handlePayment = async () => {
         setIsProcessing(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        router.push('/booking/success');
+        try {
+            await createBooking({
+                shopId: shop.id,
+                serviceId: service.id,
+                date,
+                time,
+                totalPrice: totalPrice,
+                couponId: selectedCouponId || undefined,
+                discountAmount: discountAmount > 0 ? discountAmount : undefined,
+            });
+            router.push('/booking/success');
+        } catch (error) {
+            console.error('Booking failed:', error);
+            alert('Booking failed. Please try again.');
+            setIsProcessing(false);
+        }
     };
+
+    // Filter valid coupons
+    const validCoupons = shop?.coupons?.filter(c =>
+        c.is_active &&
+        new Date(c.valid_until) > new Date() &&
+        c.min_purchase <= servicePrice
+    ) || [];
 
     return (
         <div className="container" style={{ padding: 'var(--spacing-2xl) var(--spacing-md)' }}>
@@ -68,18 +141,32 @@ function CheckoutContent() {
                     <div className={styles.summaryItem} style={{ alignItems: 'center' }}>
                         <span className={styles.label}>Discount</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <select className={styles.select} style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #ddd', fontSize: '0.85rem' }}>
+                            <select
+                                className={styles.select}
+                                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #ddd', fontSize: '0.85rem' }}
+                                value={selectedCouponId}
+                                onChange={(e) => setSelectedCouponId(e.target.value)}
+                            >
                                 <option value="">Select Coupon</option>
-                                <option value="summer">Summer Special 10%</option>
-                                <option value="welcome">Welcome Coupon ₩5,000</option>
+                                {validCoupons.map(coupon => (
+                                    <option key={coupon.id} value={coupon.id}>
+                                        {coupon.code} ({coupon.discount_type === 'percent' ? `${coupon.discount_value}%` : `₩${coupon.discount_value.toLocaleString()}`} Off)
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>
+                    {discountAmount > 0 && (
+                        <div className={styles.summaryItem} style={{ marginTop: 8, color: '#e02424' }}>
+                            <span className={styles.label}>Discount Amount</span>
+                            <span className={styles.value}>-₩{discountAmount.toLocaleString()}</span>
+                        </div>
+                    )}
 
                     <div className={styles.divider} />
                     <div className={`${styles.summaryItem} ${styles.total}`}>
                         <span className={styles.label}>Total Price</span>
-                        <span className={styles.value}>₩{service.price.toLocaleString()}</span>
+                        <span className={styles.value}>₩{totalPrice.toLocaleString()}</span>
                     </div>
                 </div>
 
@@ -88,11 +175,11 @@ function CheckoutContent() {
                     <h2 className={styles.cardTitle}>Guest Details</h2>
                     <div className={styles.inputGroup}>
                         <label>Full Name</label>
-                        <input type="text" defaultValue={MOCK_USER.name} className={styles.input} />
+                        <input type="text" defaultValue={session?.user?.name || ''} className={styles.input} />
                     </div>
                     <div className={styles.inputGroup}>
                         <label>Email</label>
-                        <input type="email" defaultValue={MOCK_USER.email} className={styles.input} />
+                        <input type="email" defaultValue={session?.user?.email || ''} className={styles.input} />
                     </div>
 
                     <h2 className={styles.cardTitle} style={{ marginTop: 'var(--spacing-xl)' }}>

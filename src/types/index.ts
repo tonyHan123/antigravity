@@ -14,8 +14,8 @@ export interface Service {
 export interface Coupon {
     id: string;
     code: string;
-    name: string;
-    description: string;
+    name: LocalizedString;
+    description: LocalizedString;
     discountType: 'percent' | 'fixed';
     discountValue: number;
     validUntil: string;
@@ -25,17 +25,47 @@ export interface Coupon {
 export interface Shop {
     id: string;
     ownerId: string;
-    name: string;
+    name: LocalizedString;
     category: Category;
     region: LocalizedString; // e.g., 'Seoul', 'Busan'
     address: LocalizedString;
     rating: number; // 0-5
     reviewCount: number;
+    likeCount: number; // For "Recommended" sort
     description: LocalizedString;
     imageUrl: string; // Placeholder for now
     services: Service[];
     images: string[]; // Gallery
     coupons?: Coupon[]; // Available coupons to claim
+
+    // Private/Business Fields
+    businessNumber?: string;
+    representativeName?: string;
+    businessLicenseUrl?: string; // URL
+    contractUrl?: string; // URL
+    bankName?: string;
+    bankAccount?: string;
+    bankHolder?: string;
+    contactPhone?: string;
+    businessHours?: Record<string, string>; // e.g. { "mon": "09:00-18:00" }
+}
+
+export interface Review {
+    id: string;
+    shopId: string;
+    userId: string;
+    userName: string;
+    rating: number;
+    content: string;
+    photos?: string[]; // URLs of uploaded photos
+    date: string;
+    reply?: string; // Owner's reply
+    replyDate?: string;
+    moderationRequest?: {
+        status: 'pending' | 'approved' | 'rejected';
+        reason: string;
+        requestDate: string;
+    };
 }
 
 export interface Booking {
@@ -53,4 +83,13 @@ export interface User {
     id: string;
     name: string;
     email: string;
+}
+
+export interface Message {
+    id: string;
+    shopId: string;
+    sender: 'admin' | 'owner';
+    content: string;
+    timestamp: string;
+    isRead: boolean;
 }

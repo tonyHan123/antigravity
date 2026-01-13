@@ -1,0 +1,32 @@
+.button {
+    background: rgba(0, 0, 0, 0.3);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+}
+
+.button.mini {
+    width: 24px;
+    height: 24px;
+}
+
+.button:hover {
+    background: rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
+}
+
+.button.active {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.icon {
+    transition: all 0.2s ease;
+}

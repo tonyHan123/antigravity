@@ -12,10 +12,12 @@ export const translations = {
         },
         home: {
             hero: {
-                title: 'Experience Authentic K-Beauty',
-                subtitle: 'Book premium beauty services trusted by K-pop idols and celebrities',
+                title: 'Unlock Your \nK-Beauty Potential',
+                subtitle: 'Book premium hair, makeup, nail, and spa services \ntrusted by celebrities and locals alike.',
             },
+            trendingTitle: 'Trending Experiences',
             searchPlaceholder: 'Search salons, treatments...',
+            recommendedTitle: 'Guest Favorites',
             categories: {
                 hair: 'Hair Salon',
                 nail: 'Nail Art',
@@ -51,6 +53,16 @@ export const translations = {
             terms: 'Terms of Service',
             privacy: 'Privacy Policy',
         },
+        shop: {
+            specialOffers: 'Special Offers',
+            getCoupon: 'Get Coupon',
+            inWallet: 'In Wallet',
+            validUntil: 'Valid until',
+            about: 'About',
+            servicesMenu: 'Services Menu',
+            reviews: 'reviews',
+            mins: 'mins',
+        },
     },
     jp: {
         navbar: {
@@ -63,9 +75,10 @@ export const translations = {
         },
         home: {
             hero: {
-                title: '本格的なK-Beautyを体験',
-                subtitle: 'K-popアイドルやセレブに信頼されるプレミアムビューティサービス',
+                title: 'K-Beautyの可能性を\n解き放つ',
+                subtitle: 'セレブや地元の人々に信頼されるプレミアムな\nヘア、メイク、ネイル、スパサービスを予約しましょう。',
             },
+            trendingTitle: 'トレンド体験',
             searchPlaceholder: 'サロン、トリートメントを検索...',
             categories: {
                 hair: 'ヘアサロン',
@@ -102,6 +115,16 @@ export const translations = {
             terms: '利用規約',
             privacy: 'プライバシーポリシー',
         },
+        shop: {
+            specialOffers: '特別オファー',
+            getCoupon: 'クーポンを獲得',
+            inWallet: '保存済み',
+            validUntil: '有効期限',
+            about: '店舗について',
+            servicesMenu: 'サービスメニュー',
+            reviews: 'レビュー',
+            mins: '分',
+        },
     },
     cn: {
         navbar: {
@@ -114,9 +137,10 @@ export const translations = {
         },
         home: {
             hero: {
-                title: '体验正宗韩式美容',
-                subtitle: '预约K-pop偶像和明星信赖的高端美容服务',
+                title: '释放您的 \nK-Beauty 潜力',
+                subtitle: '预约深受名人和当地人信赖的\n高级美发、化妆、美甲和水疗服务。',
             },
+            trendingTitle: '热门体验',
             searchPlaceholder: '搜索沙龙、护理服务...',
             categories: {
                 hair: '美发沙龙',
@@ -153,6 +177,16 @@ export const translations = {
             terms: '服务条款',
             privacy: '隐私政策',
         },
+        shop: {
+            specialOffers: '特别优惠',
+            getCoupon: '领取优惠券',
+            inWallet: '已领取',
+            validUntil: '有效期至',
+            about: '关于我们',
+            servicesMenu: '服务菜单',
+            reviews: '评论',
+            mins: '分钟',
+        },
     },
     id: {
         navbar: {
@@ -165,9 +199,10 @@ export const translations = {
         },
         home: {
             hero: {
-                title: 'Rasakan K-Beauty Asli',
-                subtitle: 'Pesan layanan kecantikan premium yang dipercaya oleh idol K-pop',
+                title: 'Buka Potensi \nK-Beauty Anda',
+                subtitle: 'Pesan layanan rambut, makeup, kuku, dan spa premium \nyang dipercaya oleh selebriti dan warga lokal.',
             },
+            trendingTitle: 'Pengalaman Tren',
             searchPlaceholder: 'Cari salon, perawatan...',
             categories: {
                 hair: 'Salon Rambut',
@@ -204,6 +239,16 @@ export const translations = {
             terms: 'Syarat Layanan',
             privacy: 'Kebijakan Privasi',
         },
+        shop: {
+            specialOffers: 'Penawaran Spesial',
+            getCoupon: 'Ambil Kupon',
+            inWallet: 'Di Dompet',
+            validUntil: 'Berlaku hingga',
+            about: 'Tentang',
+            servicesMenu: 'Menu Layanan',
+            reviews: 'ulasan',
+            mins: 'menit',
+        },
     },
     hi: {
         navbar: {
@@ -216,9 +261,10 @@ export const translations = {
         },
         home: {
             hero: {
-                title: 'असली के-ब्यूटी का अनुभव करें',
-                subtitle: 'के-पॉप आइडल्स और सेलिब्रिटीज़ द्वारा विश्वसनीय प्रीमियम ब्यूटी सर्विसेज बुक करें',
+                title: 'अपनी के-ब्यूटी \nक्षमता को अनलॉक करें',
+                subtitle: 'सेलिब्रिटीज़ और स्थानीय लोगों द्वारा विश्वसनीय \nप्रीमियम हेयर, मेकअप, नेल और स्पा सेवाएं बुक करें।',
             },
+            trendingTitle: 'ट्रेंडिंग अनुभव',
             searchPlaceholder: 'सैलून, ट्रीटमेंट खोजें...',
             categories: {
                 hair: 'हेयर सैलून',
@@ -254,6 +300,16 @@ export const translations = {
             legal: 'कानूनी',
             terms: 'सेवा की शर्तें',
             privacy: 'गोपनीयता नीति',
+        },
+        shop: {
+            specialOffers: 'विशेष प्रस्ताव',
+            getCoupon: 'कूपन प्राप्त करें',
+            inWallet: 'वॉलेट में',
+            validUntil: 'तक वैध',
+            about: 'के बारे में',
+            servicesMenu: 'सेवा मेनू',
+            reviews: 'समीक्षाएं',
+            mins: 'मिनट',
         },
     },
 };

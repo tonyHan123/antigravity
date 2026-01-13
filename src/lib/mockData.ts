@@ -1,4 +1,4 @@
-import { Shop, User, Booking } from '@/types';
+import { Shop, User, Booking, Review, Message } from '@/types';
 
 export const MOCK_SHOPS: Shop[] = [
     {
@@ -10,6 +10,7 @@ export const MOCK_SHOPS: Shop[] = [
         address: { en: 'Gangnam-gu, Seoul', jp: 'ソウル江南区', cn: '首尔江南区', id: 'Gangnam-gu, Seoul', hi: 'गंगनम-गु, सियोल' },
         rating: 4.8,
         reviewCount: 120,
+        likeCount: 452,
         description: {
             en: 'Celebrity favorite hair salon located in the heart of Gangnam using premium products.',
             jp: 'カンナムの中心に位置するセレブ御用達のヘアサロン。高級製品を使用。',
@@ -23,8 +24,20 @@ export const MOCK_SHOPS: Shop[] = [
             {
                 id: 'cpn-1',
                 code: 'SUMMER10',
-                name: 'Summer Hair Special',
-                description: '10% off on all hair treatments',
+                name: {
+                    en: 'Summer Hair Special',
+                    jp: 'サマーヘアスペシャル',
+                    cn: '夏季美发特惠',
+                    id: 'Spesial Rambut Musim Panas',
+                    hi: 'समर हेयर स्पेशल'
+                },
+                description: {
+                    en: '10% off on all hair treatments',
+                    jp: 'すべてのヘアトリートメントが10%オフ',
+                    cn: '所有美发护理享受 10% 折扣',
+                    id: 'Diskon 10% untuk semua perawatan rambut',
+                    hi: 'सभी हेयर ट्रीटमेंट पर 10% की छूट'
+                },
                 discountType: 'percent',
                 discountValue: 10,
                 validUntil: '2025-08-31',
@@ -33,8 +46,20 @@ export const MOCK_SHOPS: Shop[] = [
             {
                 id: 'cpn-2',
                 code: 'FIRSTVISIT',
-                name: 'First Visit Discount',
-                description: '₩5,000 off for first time visitors',
+                name: {
+                    en: 'First Visit Discount',
+                    jp: '初回訪問割引',
+                    cn: '首次访问优惠',
+                    id: 'Diskon Kunjungan Pertama',
+                    hi: 'पहली बार आने पर छूट'
+                },
+                description: {
+                    en: '₩5,000 off for first time visitors',
+                    jp: '初回のお客様は5,000ウォン割引',
+                    cn: '首次访问减免 ₩5,000',
+                    id: 'Potongan ₩5.000 untuk pengunjung pertama',
+                    hi: 'पहली बार आने वाले आगंतुकों के लिए ₩5,000 की छूट'
+                },
                 discountType: 'fixed',
                 discountValue: 5000,
                 validUntil: '2025-12-31',
@@ -56,6 +81,7 @@ export const MOCK_SHOPS: Shop[] = [
         address: { en: 'Gangnam-gu, Seoul', jp: 'ソウル江南区', cn: '首尔江南区', id: 'Gangnam-gu, Seoul', hi: 'गंगनम-गु, सियोल' },
         rating: 4.9,
         reviewCount: 340,
+        likeCount: 890,
         description: {
             en: 'Traditional Korean herbal medicine spa experience for ultimate relaxation.',
             jp: '究極のリラクゼーションのための韓国伝統漢方スパ体験。',
@@ -79,6 +105,7 @@ export const MOCK_SHOPS: Shop[] = [
         address: { en: 'Haeundae-gu, Busan', jp: '釜山海雲台区', cn: '釜山海云台区', id: 'Haeundae-gu, Busan', hi: 'हे雲ड-गु, बुसान' },
         rating: 4.5,
         reviewCount: 45,
+        likeCount: 120,
         description: {
             en: 'Beautiful nail art with an ocean view in Haeundae.',
             jp: '海雲台のオーシャンビューを楽しめる美しいネイルアート。',
@@ -102,6 +129,7 @@ export const MOCK_SHOPS: Shop[] = [
         address: { en: 'Mapo-gu, Seoul', jp: 'ソウル麻浦区', cn: '首尔麻浦区', id: 'Mapo-gu, Seoul', hi: 'मापो-गु, सियोल' },
         rating: 4.7,
         reviewCount: 89,
+        likeCount: 230,
         description: {
             en: 'Get the trendy K-Drama look with our professional makeup artists.',
             jp: 'プロのメイクアップアーティストによるトレンディなKドラマルックを。',
@@ -115,6 +143,112 @@ export const MOCK_SHOPS: Shop[] = [
             { id: 'srv-8', name: { en: 'Daily Natural Makeup', jp: 'デイリーナチュラルメイク', cn: '日常自然妆', id: 'Makeup Natural Harian', hi: 'डेली नेचुरल मेकअप' }, durationMin: 60, price: 80000 },
             { id: 'srv-9', name: { en: 'Idol Stage Makeup', jp: 'アイドルステージメイク', cn: '偶像舞台妆', id: 'Makeup Panggung Idol', hi: 'आइडल स्टेज मेकअप' }, durationMin: 90, price: 150000 },
         ],
+    },
+    // NEW SHOPS START
+    {
+        id: 'shop-5',
+        ownerId: 'owner-5',
+        name: { en: 'Vogue Hair Lounge', jp: 'ヴォーグヘアラウンジ', cn: 'Vogue 美发沙龙', id: 'Vogue Hair Lounge', hi: 'वोग हेयर लाउंज' },
+        category: 'Hair',
+        region: { en: 'Seoul', jp: 'ソウル', cn: '首尔', id: 'Seoul', hi: 'सियोल' },
+        address: { en: 'Gangnam-gu, Seoul', jp: 'ソウル江南区', cn: '首尔江南区', id: 'Gangnam-gu, Seoul', hi: 'गंगनम-गु, सियोल' },
+        rating: 4.7,
+        reviewCount: 98,
+        likeCount: 340,
+        description: { en: 'Trend-setting styles in the heart of Gangnam.' },
+        imageUrl: '/images/hair-inner.jpg',
+        images: ['/images/hair-inner.jpg'],
+        services: [{ id: 'srv-10', name: { en: 'Designer Cut' }, durationMin: 60, price: 60000 }],
+    },
+    {
+        id: 'shop-6',
+        ownerId: 'owner-6',
+        name: { en: 'Day Park Hair', jp: 'デイパークヘア', cn: 'Day Park 美发', id: 'Day Park Hair', hi: 'डे पार्क हेयर' },
+        category: 'Hair',
+        region: { en: 'Seoul', jp: 'ソウル', cn: '首尔', id: 'Seoul', hi: 'सियोल' },
+        address: { en: 'Mapo-gu, Seoul', jp: 'ソウル麻浦区', cn: '首尔麻浦区', id: 'Mapo-gu, Seoul', hi: 'मापो-गु, सियोल' },
+        rating: 4.5,
+        reviewCount: 45,
+        likeCount: 120,
+        description: { en: 'Cozy atmosphere and personal care for your hair.' },
+        imageUrl: '/images/hair-1.jpg',
+        images: ['/images/hair-1.jpg'],
+        services: [{ id: 'srv-11', name: { en: 'Basic Perm' }, durationMin: 120, price: 90000 }],
+    },
+    {
+        id: 'shop-7',
+        ownerId: 'owner-7',
+        name: { en: 'Chahong Ardor', jp: 'チャホンアルド', cn: 'Chahong Ardor', id: 'Chahong Ardor', hi: 'चाहोंग आर्डर' },
+        category: 'Hair',
+        region: { en: 'Seoul', jp: 'ソウル', cn: '首尔', id: 'Seoul', hi: 'सियोल' },
+        address: { en: 'Gangnam-gu, Seoul', jp: 'ソウル江南区', cn: '首尔江南区', id: 'Gangnam-gu, Seoul', hi: 'गंगनम-गु, सियोल' },
+        rating: 4.9,
+        reviewCount: 312,
+        likeCount: 890,
+        description: { en: 'Premium hair consulting and styling service.' },
+        imageUrl: '/images/hair-inner.jpg',
+        images: ['/images/hair-inner.jpg'],
+        services: [{ id: 'srv-12', name: { en: 'Consulting Cut' }, durationMin: 80, price: 88000 }],
+    },
+    {
+        id: 'shop-8',
+        ownerId: 'owner-8',
+        name: { en: 'Juno Hair Hongdae', jp: 'ジュノヘア弘大', cn: 'Juno Hair 弘大', id: 'Juno Hair Hongdae', hi: 'जूनो हेयर होंगडे' },
+        category: 'Hair',
+        region: { en: 'Seoul', jp: 'ソウル', cn: '首尔', id: 'Seoul', hi: 'सियोल' },
+        address: { en: 'Mapo-gu, Seoul', jp: 'ソウル麻浦区', cn: '首尔麻浦区', id: 'Mapo-gu, Seoul', hi: 'मापो-गु, सियोल' },
+        rating: 4.6,
+        reviewCount: 156,
+        likeCount: 450,
+        description: { en: 'Young and vibrant styles near the university district.' },
+        imageUrl: '/images/hair-1.jpg',
+        images: ['/images/hair-1.jpg'],
+        services: [{ id: 'srv-13', name: { en: 'Volume Magic' }, durationMin: 150, price: 160000 }],
+    },
+    {
+        id: 'shop-9',
+        ownerId: 'owner-9',
+        name: { en: 'Leechul Hairkerker', jp: 'イチョルヘアー', cn: 'Leechul Hairkerker', id: 'Leechul Hairkerker', hi: 'लीचुल हेयरकेर्कर' },
+        category: 'Hair',
+        region: { en: 'Seoul', jp: 'ソウル', cn: '首尔', id: 'Seoul', hi: 'सियोल' },
+        address: { en: 'Jung-gu, Seoul', jp: 'ソウル中区', cn: '首尔中区', id: 'Jung-gu, Seoul', hi: 'जुंग-गु, सियोल' },
+        rating: 4.4,
+        reviewCount: 88,
+        likeCount: 210,
+        description: { en: 'Standard and reliable hair services suitable for everyone.' },
+        imageUrl: '/images/hair-inner.jpg',
+        images: ['/images/hair-inner.jpg'],
+        services: [{ id: 'srv-14', name: { en: 'General Cut' }, durationMin: 40, price: 35000 }],
+    },
+    {
+        id: 'shop-10',
+        ownerId: 'owner-10',
+        name: { en: 'Soonsiki Hair', jp: 'スンシキヘア', cn: 'Soonsiki Hair', id: 'Soonsiki Hair', hi: 'सूनसिकी हेयर' },
+        category: 'Hair',
+        region: { en: 'Seoul', jp: 'ソウル', cn: '首尔', id: 'Seoul', hi: 'सियोल' },
+        address: { en: 'Mapo-gu, Seoul', jp: 'ソウル麻浦区', cn: '首尔麻浦区', id: 'Mapo-gu, Seoul', hi: 'मापो-गु, सियोल' },
+        rating: 4.8,
+        reviewCount: 420,
+        likeCount: 950,
+        description: { en: 'Unique colors and bold cuts for the fashion forward.' },
+        imageUrl: '/images/hair-1.jpg',
+        images: ['/images/hair-1.jpg'],
+        services: [{ id: 'srv-15', name: { en: 'Bleach & Color' }, durationMin: 180, price: 220000 }],
+    },
+    {
+        id: 'shop-11',
+        ownerId: 'owner-11',
+        name: { en: 'Park Jun Beauty Lab', jp: 'パクジュンビューティーラボ', cn: 'Park Jun 美容实验室', id: 'Park Jun Beauty Lab', hi: 'पार्क जून ब्यूटी लैब' },
+        category: 'Hair',
+        region: { en: 'Seoul', jp: 'ソウル', cn: '首尔', id: 'Seoul', hi: 'सियोल' },
+        address: { en: 'Gangnam-gu, Seoul', jp: 'ソウル江南区', cn: '首尔江南区', id: 'Gangnam-gu, Seoul', hi: 'गंगनम-गु, सियोल' },
+        rating: 4.3,
+        reviewCount: 112,
+        likeCount: 300,
+        description: { en: 'Expert care for damaged hair using clinic systems.' },
+        imageUrl: '/images/hair-inner.jpg',
+        images: ['/images/hair-inner.jpg'],
+        services: [{ id: 'srv-16', name: { en: 'Clinic Full Course' }, durationMin: 90, price: 150000 }],
     },
 ];
 
@@ -145,4 +279,43 @@ export const MOCK_BOOKINGS: Booking[] = [
         status: 'confirmed',
         totalPrice: 220000,
     }
+];
+export const MOCK_REVIEWS: Review[] = [
+    {
+        id: 'rev-1',
+        shopId: 'shop-1',
+        userId: 'user-2',
+        userName: 'Sarah J.',
+        rating: 5,
+        content: 'Absolutely loved the hair treatment! My hair feels so soft and shiny. The staff spoke excellent English.',
+        photos: ['/images/hair-1.jpg'],
+        date: '2025-12-10',
+        reply: 'Thank you Sarah! We are happy you liked our service.',
+        replyDate: '2025-12-11'
+    },
+    {
+        id: 'rev-2',
+        shopId: 'shop-1',
+        userId: 'user-3',
+        userName: 'Mike T.',
+        rating: 4,
+        content: 'Great cut, but a bit pricey compared to other places. Still worth it for the premium service.',
+        date: '2025-12-20'
+    },
+    {
+        id: 'rev-3',
+        shopId: 'shop-2',
+        userId: 'user-guest',
+        userName: 'Foreign Visitor',
+        rating: 5,
+        content: 'The ginseng spa was incredibly relaxing. Highly recommended for travelers!',
+        date: '2026-01-05'
+    }
+];
+
+export const MOCK_MESSAGES: Message[] = [
+    { id: 'msg-1', shopId: 'shop-1', sender: 'owner', content: 'Hello Admin, how do I update my shop hours?', timestamp: '2025-10-15 10:30', isRead: true },
+    { id: 'msg-2', shopId: 'shop-1', sender: 'admin', content: 'Hi! You can go to the "Shop Info" tab and click "Edit Schedule".', timestamp: '2025-10-15 10:35', isRead: true },
+    { id: 'msg-3', shopId: 'shop-1', sender: 'owner', content: 'Got it, thanks!', timestamp: '2025-10-15 10:40', isRead: true },
+    { id: 'msg-4', shopId: 'shop-3', sender: 'owner', content: 'My payout amount seems incorrect for last month.', timestamp: '2025-10-20 09:00', isRead: false },
 ];
