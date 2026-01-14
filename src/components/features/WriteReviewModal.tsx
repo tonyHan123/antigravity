@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Star, X, Upload, Image as ImageIcon } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import styles from './WriteReviewModal.module.css';
@@ -10,15 +10,34 @@ interface WriteReviewModalProps {
     onClose: () => void;
     onSubmit: (data: { rating: number; content: string; photos: File[] }) => void;
     shopName: string;
+    initialRating?: number;
+    initialContent?: string;
+    isEditMode?: boolean;
 }
 
-export default function WriteReviewModal({ isOpen, onClose, onSubmit, shopName }: WriteReviewModalProps) {
-    const [rating, setRating] = useState(5);
-    const [content, setContent] = useState('');
+export default function WriteReviewModal({
+    isOpen,
+    onClose,
+    onSubmit,
+    shopName,
+    initialRating,
+    initialContent,
+    isEditMode = false
+}: WriteReviewModalProps) {
+    const [rating, setRating] = useState(initialRating || 5);
+    const [content, setContent] = useState(initialContent || '');
     const [photos, setPhotos] = useState<File[]>([]);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-    if (!isOpen) return null;
+    // Reset state when modal opens with new data
+    useEffect(() => {
+        if (isOpen) {
+            setRating(initialRating || 5);
+            setContent(initialContent || '');
+            setPhotos([]);
+            setPreviewUrls([]);
+        }
+    }, [isOpen, initialRating, initialContent]);
 
     const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -40,11 +59,13 @@ export default function WriteReviewModal({ isOpen, onClose, onSubmit, shopName }
         onClose();
     };
 
+    if (!isOpen) return null;
+
     return (
         <div className={styles.overlay}>
             <div className={styles.modal}>
                 <div className={styles.header}>
-                    <h3>Write a Review</h3>
+                    <h3>{isEditMode ? 'Edit Review' : 'Write a Review'}</h3>
                     <button onClick={onClose} className={styles.closeBtn}><X size={20} /></button>
                 </div>
 
@@ -103,7 +124,7 @@ export default function WriteReviewModal({ isOpen, onClose, onSubmit, shopName }
 
                 <div className={styles.footer}>
                     <Button variant="outline" onClick={onClose}>Cancel</Button>
-                    <Button onClick={handleSubmit} disabled={content.length < 10}>Submit Review</Button>
+                    <Button onClick={handleSubmit} disabled={content.trim().length === 0}>Submit Review</Button>
                 </div>
             </div>
         </div>

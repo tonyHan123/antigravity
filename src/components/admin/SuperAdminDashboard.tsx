@@ -4,13 +4,16 @@ import { useState } from 'react';
 import { LayoutDashboard, Users, Store, DollarSign, AlertCircle } from 'lucide-react';
 import styles from './SuperAdminDashboard.module.css';
 import GlobalOverview from './GlobalOverview';
-import UserManagement from './UserManagement';
+import AdminUsersTab from './AdminUsersTab';
 import ShopManagementList from './ShopManagementList';
 import SettlementManager from './SettlementManager';
 import ModerationManager from './ModerationManager';
 import AdminMessagesTab from './tabs/AdminMessagesTab';
 
+import { useUnreadCounts } from '@/hooks/useUnreadCounts';
+
 export default function SuperAdminDashboard() {
+    const { unreadMessages } = useUnreadCounts();
     const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'shops' | 'settlement' | 'moderation' | 'messages'>('overview');
 
     return (
@@ -37,8 +40,19 @@ export default function SuperAdminDashboard() {
                     <button className={activeTab === 'moderation' ? styles.active : ''} onClick={() => setActiveTab('moderation')}>
                         <AlertCircle size={18} /> Moderation
                     </button>
-                    <button className={activeTab === 'messages' ? styles.active : ''} onClick={() => setActiveTab('messages')}>
-                        <Store size={18} /> Messages
+                    <button className={activeTab === 'messages' ? styles.active : ''} onClick={() => setActiveTab('messages')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Store size={18} /> Messages
+                        </div>
+                        {unreadMessages > 0 && (
+                            <span style={{
+                                background: '#ff4d4f', color: '#fff', fontSize: '0.75rem',
+                                fontWeight: 600, padding: '2px 8px', borderRadius: 999,
+                                lineHeight: 1
+                            }}>
+                                {unreadMessages > 99 ? '99+' : unreadMessages}
+                            </span>
+                        )}
                     </button>
                 </nav>
             </aside>
@@ -58,7 +72,7 @@ export default function SuperAdminDashboard() {
 
                 <div className={styles.content}>
                     {activeTab === 'overview' && <GlobalOverview />}
-                    {activeTab === 'users' && <UserManagement />}
+                    {activeTab === 'users' && <AdminUsersTab />}
                     {activeTab === 'shops' && <ShopManagementList />}
                     {activeTab === 'settlement' && <SettlementManager />}
                     {activeTab === 'moderation' && <ModerationManager />}

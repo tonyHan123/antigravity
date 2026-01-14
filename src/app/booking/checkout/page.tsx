@@ -7,10 +7,12 @@ import Button from '@/components/ui/Button';
 import { getShop, Shop, createBooking } from '@/lib/api';
 import styles from './checkout.module.css';
 import { useSession } from 'next-auth/react';
+import { useCoupons } from '@/components/providers/CouponProvider';
 
 function CheckoutContent() {
     const router = useRouter();
     const { data: session } = useSession();
+    const { claimedCoupons } = useCoupons();
     const searchParams = useSearchParams();
     const shopId = searchParams.get('shopId');
     const serviceId = searchParams.get('serviceId');
@@ -20,6 +22,7 @@ function CheckoutContent() {
     const [shop, setShop] = useState<Shop | null>(null);
     const [loading, setLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [selectedCouponId, setSelectedCouponId] = useState<string>('');
 
     // Helper
     const getL = (val: { en: string; jp?: string; cn?: string } | string | undefined) => {
@@ -63,18 +66,24 @@ function CheckoutContent() {
         );
     }
 
-    const [selectedCouponId, setSelectedCouponId] = useState<string>('');
+    // Filter user's claimed coupons for THIS shop only
+
+    const userCouponsForThisShop = claimedCoupons.filter(c =>
+        c.shopId === shop.id &&
+        new Date(c.validUntil) > new Date()
+    );
+
 
     // Calculate totals
     const servicePrice = service?.price || 0;
-    const selectedCoupon = shop?.coupons?.find(c => c.id === selectedCouponId);
+    const selectedCoupon = userCouponsForThisShop.find(c => c.id === selectedCouponId);
 
     let discountAmount = 0;
     if (selectedCoupon) {
-        if (selectedCoupon.discount_type === 'percent') {
-            discountAmount = Math.floor(servicePrice * (selectedCoupon.discount_value / 100));
+        if (selectedCoupon.discountType === 'percent') {
+            discountAmount = Math.floor(servicePrice * (selectedCoupon.discountValue / 100));
         } else {
-            discountAmount = selectedCoupon.discount_value;
+            discountAmount = selectedCoupon.discountValue;
         }
     }
 
@@ -100,13 +109,6 @@ function CheckoutContent() {
             setIsProcessing(false);
         }
     };
-
-    // Filter valid coupons
-    const validCoupons = shop?.coupons?.filter(c =>
-        c.is_active &&
-        new Date(c.valid_until) > new Date() &&
-        c.min_purchase <= servicePrice
-    ) || [];
 
     return (
         <div className="container" style={{ padding: 'var(--spacing-2xl) var(--spacing-md)' }}>
@@ -148,9 +150,9 @@ function CheckoutContent() {
                                 onChange={(e) => setSelectedCouponId(e.target.value)}
                             >
                                 <option value="">Select Coupon</option>
-                                {validCoupons.map(coupon => (
+                                {userCouponsForThisShop.map(coupon => (
                                     <option key={coupon.id} value={coupon.id}>
-                                        {coupon.code} ({coupon.discount_type === 'percent' ? `${coupon.discount_value}%` : `₩${coupon.discount_value.toLocaleString()}`} Off)
+                                        {coupon.code} ({coupon.discountType === 'percent' ? `${coupon.discountValue}%` : `₩${coupon.discountValue?.toLocaleString()}`} Off)
                                     </option>
                                 ))}
                             </select>

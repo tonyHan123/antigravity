@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Clock, MapPin, User as UserIcon, Heart, Package, HelpCircle, Bell } from 'lucide-react';
+import { Calendar, Clock, MapPin, User as UserIcon, Heart, Package, HelpCircle, Bell, Star, Edit2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
 import { getMyBookings, Booking, getShops, Shop } from '@/lib/api';
@@ -38,19 +38,27 @@ export default function MyPage() {
 
     // Review Modal State
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-    const [selectedShopForReview, setSelectedShopForReview] = useState<{ id: string; name: string } | null>(null);
+    const [selectedBookingForReview, setSelectedBookingForReview] = useState<{ shopId: string; shopName: string; bookingId: string; existingReviewId?: string } | null>(null);
+    const [submittingReview, setSubmittingReview] = useState(false);
+    const [reviewedBookingIds, setReviewedBookingIds] = useState<Set<string>>(new Set());
+    const [userReviews, setUserReviews] = useState<Record<string, { id: string; rating: number; content: string }>>({}); // Map bookingId -> review
+
+    // Expansion State
+    const [expandedNotifications, setExpandedNotifications] = useState<Set<string>>(new Set());
+    const [expandedReviews, setExpandedReviews] = useState<Set<string>>(new Set());
 
     // Use real session from AuthProvider
     const { user: sessionUser } = useAuth();
     const [user, setUser] = useState<{ name: string; email: string; role: string; shopId?: string } | null>(null);
 
     // Helper to get localized string
-    const getL = (obj: { en: string; jp?: string; cn?: string } | string | undefined) => {
+    // Helper to get localized string
+    const getL = (obj: any) => {
         if (!obj) return '';
         if (typeof obj === 'string') return obj;
         if (language === 'jp' && obj.jp) return obj.jp;
         if (language === 'cn' && obj.cn) return obj.cn;
-        return obj.en;
+        return obj.en || '';
     };
 
     // Load bookings from API
@@ -59,6 +67,35 @@ export default function MyPage() {
             try {
                 const data = await getMyBookings();
                 setBookings(data);
+
+                // After loading bookings, fetch user's reviews to check which ones are already reviewed
+                const reviewedIds = new Set<string>();
+                const reviewsMap: Record<string, { id: string; rating: number; content: string }> = {};
+
+                for (const booking of data) {
+                    if (booking.shop_id) {
+                        try {
+                            const res = await fetch(`/api/reviews/${booking.shop_id}`);
+                            if (res.ok) {
+                                const reviewData = await res.json();
+                                // Find review for this booking
+                                const myReview = reviewData.reviews?.find((r: any) => r.booking_id === booking.id);
+                                if (myReview) {
+                                    reviewedIds.add(booking.id);
+                                    reviewsMap[booking.id] = {
+                                        id: myReview.id,
+                                        rating: myReview.rating,
+                                        content: myReview.content
+                                    };
+                                }
+                            }
+                        } catch (e) {
+                            // Ignore individual fetch errors
+                        }
+                    }
+                }
+                setReviewedBookingIds(reviewedIds);
+                setUserReviews(reviewsMap);
             } catch (error) {
                 console.error('Failed to load bookings:', error);
             } finally {
@@ -186,18 +223,51 @@ export default function MyPage() {
     }
 
     // Filter bookings
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    // Use local time for date string (YYYY-MM-DD)
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const today = `${year}-${month}-${day}`;
+
+    // Current time in minutes for comparison
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+    const currentTotalMinutes = currentHours * 60 + currentMinutes;
+
+    const isPast = (b: Booking) => {
+        if (b.status === 'cancelled') return false; // Cancelled is its own category or excluded
+
+        if (b.date < today) return true;
+        if (b.date > today) return false;
+
+        // Same day: check specific time + duration
+        // @ts-ignore - services type might be loose
+        const duration = b.services?.duration_min || 30;
+        const [h, m] = b.time.split(':').map(Number);
+        const endTotalMinutes = h * 60 + m + duration;
+
+        // It is past if NOW is greater than EndTime
+        return currentTotalMinutes >= endTotalMinutes;
+    };
+
     const upcomingBookings = bookings
-        .filter(b => b.date >= today && b.status !== 'cancelled')
+        .filter(b => {
+            if (b.status === 'cancelled') return false;
+            return !isPast(b);
+        })
         .sort((a, b) => {
-            // Sort by date ascending (closest first), then by time
             const dateCompare = a.date.localeCompare(b.date);
             if (dateCompare !== 0) return dateCompare;
             return a.time.localeCompare(b.time);
         });
+
     const pastBookings = bookings
-        .filter(b => b.date < today || b.status === 'cancelled')
-        .sort((a, b) => b.date.localeCompare(a.date)); // Most recent first
+        .filter(b => {
+            if (b.status !== 'confirmed' && b.status !== 'completed') return false;
+            return isPast(b);
+        })
+        .sort((a, b) => b.date.localeCompare(a.date));
 
     // Filter wishlist shops
     const wishlistShops = allShops.filter(shop => wishlist.includes(shop.id));
@@ -314,25 +384,83 @@ export default function MyPage() {
                                         const service = booking.services as unknown as { id: string; name: { en: string }; price: number } | undefined;
                                         return (
                                             <div key={booking.id} className={`${styles.bookingCard}`}>
+
                                                 <div className={styles.cardHeader}>
                                                     <span className={styles.shopName}>{getL(shop?.name)}</span>
+                                                    <span className={styles.infoRow}>
+                                                        <Calendar size={12} /> {booking.date} &nbsp;
+                                                        <Clock size={12} /> {booking.time?.slice(0, 5)}
+                                                    </span>
                                                 </div>
 
                                                 <div className={styles.cardBody}>
-                                                    <div className={styles.infoRow}>
-                                                        <MapPin size={16} /> {shop?.category || 'Beauty'}
-                                                    </div>
-                                                    <div className={styles.infoRow}>
-                                                        <Calendar size={16} /> {booking.date}
-                                                        <Clock size={16} style={{ marginLeft: 8 }} /> {booking.time}
-                                                    </div>
-                                                    <div className={styles.serviceName}>
-                                                        <Package size={14} style={{ marginRight: 4 }} /> {getL(service?.name)}
-                                                    </div>
-                                                    <div className={styles.price}>₩{booking.totalPrice?.toLocaleString()}</div>
+                                                    <span className={styles.serviceName}>
+                                                        <Package size={12} style={{ marginRight: 4 }} /> {getL(service?.name)}
+                                                    </span>
+                                                    <span className={styles.price}>₩{booking.total_price?.toLocaleString()}</span>
                                                 </div>
 
-                                                <div className={styles.cardFooter}>
+                                                {/* User's Review Display */}
+                                                {userReviews[booking.id] && (
+                                                    <div
+                                                        onClick={() => {
+                                                            const newSet = new Set(expandedReviews);
+                                                            if (newSet.has(booking.id)) newSet.delete(booking.id);
+                                                            else newSet.add(booking.id);
+                                                            setExpandedReviews(newSet);
+                                                        }}
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'flex-start',
+                                                            gap: '8px',
+                                                            padding: '6px 8px',
+                                                            background: '#fefcf3',
+                                                            borderRadius: '6px',
+                                                            marginTop: '4px',
+                                                            fontSize: '0.75rem',
+                                                            cursor: 'pointer'
+                                                        }}>
+                                                        <div style={{ display: 'flex', gap: '1px', flexShrink: 0, marginTop: 2 }}>
+                                                            {[1, 2, 3, 4, 5].map(s => (
+                                                                <Star key={s} size={10}
+                                                                    fill={s <= userReviews[booking.id].rating ? '#ffd700' : '#ddd'}
+                                                                    color={s <= userReviews[booking.id].rating ? '#ffd700' : '#ddd'}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                        <span style={{
+                                                            color: '#666',
+                                                            overflow: 'hidden',
+                                                            textOverflow: expandedReviews.has(booking.id) ? 'unset' : 'ellipsis',
+                                                            whiteSpace: expandedReviews.has(booking.id) ? 'pre-wrap' : 'nowrap',
+                                                            flex: 1
+                                                        }}>
+                                                            {expandedReviews.has(booking.id) ? userReviews[booking.id].content : `"${userReviews[booking.id].content}"`}
+                                                        </span>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                const shopName = getL(shop?.name) || 'Shop';
+                                                                setSelectedBookingForReview({
+                                                                    shopId: shop!.id,
+                                                                    shopName,
+                                                                    bookingId: booking.id,
+                                                                    existingReviewId: userReviews[booking.id]?.id
+                                                                });
+                                                                setIsReviewModalOpen(true);
+                                                            }}
+                                                            style={{
+                                                                background: 'none', border: 'none', cursor: 'pointer', color: '#999',
+                                                                display: 'flex', alignItems: 'center', gap: 2, padding: 0, flexShrink: 0
+                                                            }}
+                                                            title="Edit Review"
+                                                        >
+                                                            <Edit2 size={12} />
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                <div className={styles.cardFooter} style={{ display: booking.status === 'confirmed' && !userReviews[booking.id] ? 'flex' : 'none', marginTop: 4, paddingTop: 4 }}>
                                                     {activeTab === 'upcoming' && booking.status !== 'cancelled' ? (
                                                         <div style={{ display: 'flex', justifySelf: 'flex-end', width: '100%', justifyContent: 'flex-end' }}>
                                                             <button
@@ -353,13 +481,17 @@ export default function MyPage() {
                                                             </button>
                                                         </div>
                                                     ) : (
-                                                        booking.status === 'confirmed' && ( // Changed from completed for MVP
+                                                        booking.status === 'confirmed' && !reviewedBookingIds.has(booking.id) && (
                                                             <Button
                                                                 variant="primary"
                                                                 size="sm"
                                                                 onClick={() => {
                                                                     const shopName = getL(shop?.name) || 'Shop';
-                                                                    setSelectedShopForReview({ id: shop!.id, name: shopName });
+                                                                    setSelectedBookingForReview({
+                                                                        shopId: shop!.id,
+                                                                        shopName,
+                                                                        bookingId: booking.id
+                                                                    });
                                                                     setIsReviewModalOpen(true);
                                                                 }}
                                                             >
@@ -380,65 +512,84 @@ export default function MyPage() {
                                         </div>
                                     )}
                                 </div>
-                            )}
+                            )
+                            }
                         </div>
                     )}
 
                     {/* NOTIFICATIONS VIEW */}
                     {activeTab === 'notifications' && (
                         <div className={styles.bookingSection}>
-                            <h2 style={{ marginBottom: '20px', fontSize: '1.2rem' }}>Notifications</h2>
+                            <h2 style={{ marginBottom: '16px', fontSize: '1.1rem' }}>Notifications</h2>
                             {loadingNotifications ? (
-                                <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>Loading...</div>
+                                <div style={{ textAlign: 'center', padding: '30px', color: '#888' }}>Loading...</div>
                             ) : notifications.length === 0 ? (
                                 <div className={styles.empty}>No notifications yet.</div>
                             ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                     {notifications.map(notification => (
                                         <div
                                             key={notification.id}
-                                            onClick={() => !notification.is_read && markAsRead(notification.id)}
+                                            onClick={() => {
+                                                if (!notification.is_read) markAsRead(notification.id);
+                                                const newSet = new Set(expandedNotifications);
+                                                if (newSet.has(notification.id)) newSet.delete(notification.id);
+                                                else newSet.add(notification.id);
+                                                setExpandedNotifications(newSet);
+                                            }}
                                             style={{
-                                                padding: 16,
-                                                background: notification.is_read ? '#f9f9f9' : '#fff0f6',
-                                                border: notification.is_read ? '1px solid #eee' : '2px solid #eb2f96',
-                                                borderRadius: 12,
-                                                cursor: notification.is_read ? 'default' : 'pointer'
+                                                padding: '10px 14px',
+                                                background: notification.is_read ? '#fafafa' : '#fff5f8',
+                                                border: notification.is_read ? '1px solid #eee' : '1px solid #ffb3d0',
+                                                borderRadius: 8,
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s'
                                             }}
                                         >
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                                                <h4 style={{ margin: 0, color: notification.is_read ? '#666' : '#c41d7f' }}>
-                                                    {notification.title}
-                                                </h4>
-                                                {!notification.is_read && (
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: expandedNotifications.has(notification.id) ? 'flex-start' : 'center', gap: 8 }}>
+                                                <div style={{ display: 'flex', alignItems: expandedNotifications.has(notification.id) ? 'flex-start' : 'center', gap: 8, flex: 1, minWidth: 0, flexDirection: expandedNotifications.has(notification.id) ? 'column' : 'row' }}>
+                                                    {!notification.is_read && (
+                                                        <span style={{
+                                                            width: 6, height: 6, borderRadius: '50%',
+                                                            background: '#eb2f96', flexShrink: 0, marginTop: expandedNotifications.has(notification.id) ? 6 : 0
+                                                        }} />
+                                                    )}
                                                     <span style={{
-                                                        background: '#dc3545',
-                                                        color: 'white',
-                                                        padding: '2px 8px',
-                                                        borderRadius: 12,
-                                                        fontSize: '0.7rem'
+                                                        fontWeight: notification.is_read ? 500 : 600,
+                                                        fontSize: '0.9rem',
+                                                        color: notification.is_read ? '#666' : '#333',
+                                                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
                                                     }}>
-                                                        NEW
+                                                        {notification.title}
                                                     </span>
-                                                )}
+                                                    <span style={{
+                                                        fontSize: '0.8rem', color: '#666',
+                                                        whiteSpace: expandedNotifications.has(notification.id) ? 'pre-wrap' : 'nowrap',
+                                                        overflow: 'hidden', textOverflow: 'ellipsis', flex: 1
+                                                    }}>
+                                                        {expandedNotifications.has(notification.id)
+                                                            ? notification.message
+                                                            : `— ${notification.message.slice(0, 60)}${notification.message.length > 60 ? '...' : ''}`}
+                                                    </span>
+                                                </div>
+                                                <span style={{ fontSize: '0.7rem', color: '#aaa', flexShrink: 0 }}>
+                                                    {expandedNotifications.has(notification.id)
+                                                        ? new Date(notification.created_at).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                                        : new Date(notification.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                                                </span>
                                             </div>
-                                            <p style={{
-                                                margin: 0,
-                                                fontSize: '0.9rem',
-                                                color: '#666',
-                                                whiteSpace: 'pre-line'
-                                            }}>
-                                                {notification.message}
-                                            </p>
-                                            <div style={{ marginTop: 8, fontSize: '0.75rem', color: '#999' }}>
-                                                {new Date(notification.created_at).toLocaleDateString('ko-KR', {
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
-                                            </div>
+                                            {/* Show image when expanded */}
+                                            {expandedNotifications.has(notification.id) && (notification as any).image_url && (
+                                                <img
+                                                    src={(notification as any).image_url}
+                                                    alt=""
+                                                    style={{
+                                                        maxWidth: '100%',
+                                                        borderRadius: 8,
+                                                        marginTop: 10
+                                                    }}
+                                                />
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -454,14 +605,58 @@ export default function MyPage() {
                     )}
 
                     {/* Review Modal */}
-                    {selectedShopForReview && (
+                    {selectedBookingForReview && (
                         <WriteReviewModal
                             isOpen={isReviewModalOpen}
-                            onClose={() => setIsReviewModalOpen(false)}
-                            shopName={selectedShopForReview.name}
-                            onSubmit={(data) => {
-                                console.log('Review Submitted:', data, 'for shop:', selectedShopForReview.id);
-                                alert('Review and photos submitted successfully!');
+                            onClose={() => {
+                                setIsReviewModalOpen(false);
+                                setSelectedBookingForReview(null);
+                            }}
+                            shopName={selectedBookingForReview.shopName}
+                            initialRating={userReviews[selectedBookingForReview.bookingId]?.rating}
+                            initialContent={userReviews[selectedBookingForReview.bookingId]?.content}
+                            isEditMode={!!selectedBookingForReview.existingReviewId}
+                            onSubmit={async (data) => {
+                                setSubmittingReview(true);
+                                try {
+                                    const isEdit = !!selectedBookingForReview.existingReviewId;
+                                    const url = isEdit
+                                        ? `/api/reviews/${selectedBookingForReview.shopId}/${selectedBookingForReview.existingReviewId}`
+                                        : `/api/reviews/${selectedBookingForReview.shopId}`;
+
+                                    const res = await fetch(url, {
+                                        method: isEdit ? 'PATCH' : 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            bookingId: selectedBookingForReview.bookingId,
+                                            rating: data.rating,
+                                            content: data.content
+                                        })
+                                    });
+                                    const result = await res.json();
+                                    if (!res.ok) {
+                                        alert(result.error || `Failed to ${isEdit ? 'update' : 'submit'} review`);
+                                    } else {
+                                        // Update local state
+                                        setReviewedBookingIds(prev => new Set([...prev, selectedBookingForReview.bookingId]));
+                                        setUserReviews(prev => ({
+                                            ...prev,
+                                            [selectedBookingForReview.bookingId]: {
+                                                id: result.review?.id || selectedBookingForReview.existingReviewId,
+                                                rating: data.rating,
+                                                content: data.content
+                                            }
+                                        }));
+                                        alert(`Review ${isEdit ? 'updated' : 'submitted'} successfully!`);
+                                        setIsReviewModalOpen(false);
+                                        setSelectedBookingForReview(null);
+                                    }
+                                } catch (error) {
+                                    console.error('Error submitting review:', error);
+                                    alert('Failed to submit review. Please try again.');
+                                } finally {
+                                    setSubmittingReview(false);
+                                }
                             }}
                         />
                     )}
@@ -491,17 +686,26 @@ export default function MyPage() {
                             <h2 style={{ marginBottom: '20px', fontSize: '1.2rem' }}>My Coupon Wallet</h2>
                             <div className={styles.grid}>
                                 {claimedCoupons.map(coupon => (
-                                    <div key={coupon.id} style={{ padding: 20, background: 'white', border: '1px solid #eee', borderRadius: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div>
-                                            <h3 style={{ color: '#eb2f96', marginBottom: 4 }}>{getL(coupon.name)}</h3>
-                                            <p style={{ fontSize: '0.9rem', color: '#666' }}>{getL(coupon.description)}</p>
-                                            <div style={{ fontSize: '0.8rem', marginTop: 8, padding: '2px 8px', background: '#fff0f6', color: '#c41d7f', display: 'inline-block', borderRadius: 4 }}>
-                                                {coupon.discountType === 'percent' ? `${coupon.discountValue}% OFF` : `₩${coupon.discountValue.toLocaleString()} OFF`}
+                                    <div key={coupon.id} style={{ padding: 20, background: 'white', border: '1px solid #eee', borderRadius: 12 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                            <div>
+                                                <div style={{ fontSize: '0.75rem', color: '#888', marginBottom: 4 }}>
+                                                    {getL(coupon.shopName) || 'Shop'}
+                                                </div>
+                                                <h3 style={{ color: '#c41d7f', marginBottom: 4, fontSize: '1.1rem' }}>
+                                                    {coupon.code || getL(coupon.name)}
+                                                </h3>
+                                                <div style={{ fontSize: '0.9rem', marginTop: 8, padding: '4px 10px', background: '#fff0f6', color: '#c41d7f', display: 'inline-block', borderRadius: 4, fontWeight: 600 }}>
+                                                    {coupon.discountType === 'percent' ? `${coupon.discountValue}% OFF` : `₩${coupon.discountValue?.toLocaleString()} OFF`}
+                                                </div>
+                                                <div style={{ fontSize: '0.75rem', color: '#999', marginTop: 8 }}>
+                                                    Valid until {coupon.validUntil?.split('T')[0]}
+                                                </div>
                                             </div>
+                                            <Link href={coupon.shopId ? `/shop/${coupon.shopId}` : '/search'}>
+                                                <Button size="sm">Use Now</Button>
+                                            </Link>
                                         </div>
-                                        <Link href="/search">
-                                            <Button size="sm">Use Now</Button>
-                                        </Link>
                                     </div>
                                 ))}
                                 {claimedCoupons.length === 0 && (
@@ -533,6 +737,6 @@ export default function MyPage() {
 
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

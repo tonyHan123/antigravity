@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import Button from '@/components/ui/Button';
-import { Booking } from '@/types';
+import { Booking } from '@/lib/api';
 import { HelpCircle, AlertCircle, CheckCircle } from 'lucide-react';
-import { MOCK_SHOPS } from '@/lib/mockData';
 
 interface Props {
     historyBookings: Booking[];
@@ -15,6 +14,13 @@ export default function HelpCenter({ historyBookings }: Props) {
     const [category, setCategory] = useState<string>('service');
     const [message, setMessage] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
+
+    // Helper for localization
+    const getL = (val: any) => {
+        if (!val) return '';
+        if (typeof val === 'string') return val;
+        return val.en || val.ko || '';
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,28 +34,7 @@ export default function HelpCenter({ historyBookings }: Props) {
         setIsSubmitted(true);
     };
 
-    if (isSubmitted) {
-        return (
-            <div style={{ textAlign: 'center', padding: '60px 20px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                <CheckCircle size={48} color="#52c41a" style={{ marginBottom: 16 }} />
-                <h3 style={{ fontSize: '1.2rem', marginBottom: 8 }}>Inquiry Received</h3>
-                <p style={{ color: '#666', maxWidth: 400, margin: '0 auto' }}>
-                    Your support ticket has been created. Our support team will review your case and respond within 24 hours.
-                </p>
-                <Button
-                    variant="outline"
-                    style={{ marginTop: 24 }}
-                    onClick={() => {
-                        setIsSubmitted(false);
-                        setMessage('');
-                        setSelectedBookingId('');
-                    }}
-                >
-                    Submit Another Inquiry
-                </Button>
-            </div>
-        );
-    }
+    // ... (render part)
 
     return (
         <div style={{ background: 'white', borderRadius: '12px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
@@ -77,11 +62,10 @@ export default function HelpCenter({ historyBookings }: Props) {
                     >
                         <option value="">-- Select a past booking --</option>
                         {historyBookings.map(booking => {
-                            const shop = MOCK_SHOPS.find(s => s.id === booking.shopId);
-                            const shopName = shop ? (typeof shop.name === 'string' ? shop.name : shop.name.en) : 'Unknown Shop';
+                            const shopName = getL(booking.shops?.name) || 'Unknown Shop';
                             return (
                                 <option key={booking.id} value={booking.id}>
-                                    {booking.date} - {shopName} ({booking.totalPrice} KRW)
+                                    {booking.date} - {shopName} (₩{booking.total_price?.toLocaleString()})
                                 </option>
                             );
                         })}

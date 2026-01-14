@@ -20,6 +20,7 @@ export interface Coupon {
     discountValue: number;
     validUntil: string;
     shopId?: string; // If specific to a shop, null if platform-wide
+    shopName?: LocalizedString; // Shop name for display in wallet
 }
 
 export interface Shop {

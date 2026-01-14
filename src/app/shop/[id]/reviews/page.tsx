@@ -1,11 +1,10 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Star, Image as ImageIcon } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import { MOCK_SHOPS, MOCK_REVIEWS } from '@/lib/mockData';
+import { ArrowLeft, Star, MessageSquare } from 'lucide-react';
+import { getShop, Shop } from '@/lib/api';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import styles from './reviews.module.css';
 
@@ -13,23 +12,75 @@ type Props = {
     params: Promise<{ id: string }>;
 }
 
+interface Review {
+    id: string;
+    user_id: string;
+    shop_id: string;
+    rating: number;
+    content: string;
+    owner_reply: string | null;
+    reply_at: string | null;
+    created_at: string;
+    profiles?: { name: string; email: string };
+}
+
 export default function ReviewsPage({ params }: Props) {
     const { id } = use(params);
     const router = useRouter();
     const { getL, t } = useLanguage();
 
-    // Find Shop
-    const shop = MOCK_SHOPS.find((s) => s.id === id);
-    if (!shop) notFound();
+    const [shop, setShop] = useState<Shop | null>(null);
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // Filter Reviews
-    const reviews = MOCK_REVIEWS.filter(r => r.shopId === id);
+    // Fetch shop and reviews
+    useEffect(() => {
+        async function loadData() {
+            try {
+                // Fetch shop details
+                const shopData = await getShop(id);
+                setShop(shopData);
+
+                // Fetch reviews
+                const res = await fetch(`/api/reviews/${id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setReviews(data.reviews || []);
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadData();
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="container" style={{ padding: '40px', textAlign: 'center' }}>
+                Loading reviews...
+            </div>
+        );
+    }
+
+    if (!shop) {
+        notFound();
+    }
 
     // Calculate rating distribution
     const distribution = [0, 0, 0, 0, 0];
     reviews.forEach(r => {
         if (r.rating >= 1 && r.rating <= 5) distribution[r.rating - 1]++;
     });
+
+    const formatDate = (dateStr: string) => {
+        return new Date(dateStr).toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
 
     return (
         <div className="container" style={{ padding: 'var(--spacing-2xl) var(--spacing-md)' }}>
@@ -46,10 +97,10 @@ export default function ReviewsPage({ params }: Props) {
                 {/* Summary Section */}
                 <div className={styles.summaryCard}>
                     <div className={styles.ratingBig}>
-                        <span className={styles.score}>{shop.rating}</span>
+                        <span className={styles.score}>{shop.rating?.toFixed(1) || '0.0'}</span>
                         <div className={styles.stars}>
                             {[...Array(5)].map((_, i) => (
-                                <Star key={i} size={20} fill={i < Math.round(shop.rating) ? "#ffd700" : "#eee"} color={i < Math.round(shop.rating) ? "#ffd700" : "#eee"} />
+                                <Star key={i} size={20} fill={i < Math.round(shop.rating || 0) ? "#ffd700" : "#eee"} color={i < Math.round(shop.rating || 0) ? "#ffd700" : "#eee"} />
                             ))}
                         </div>
                         <span className={styles.count}>{reviews.length} reviews</span>
@@ -76,10 +127,12 @@ export default function ReviewsPage({ params }: Props) {
                     {reviews.map((review) => (
                         <div key={review.id} className={styles.reviewItem}>
                             <div className={styles.reviewHeader}>
-                                <div className={styles.avatarPlaceholder}>{review.userName.charAt(0)}</div>
+                                <div className={styles.avatarPlaceholder}>
+                                    {(review.profiles?.name || 'A').charAt(0).toUpperCase()}
+                                </div>
                                 <div>
-                                    <div className={styles.reviewerName}>{review.userName}</div>
-                                    <div className={styles.reviewDate}>{review.date}</div>
+                                    <div className={styles.reviewerName}>{review.profiles?.name || 'Anonymous'}</div>
+                                    <div className={styles.reviewDate}>{formatDate(review.created_at)}</div>
                                 </div>
                             </div>
 
@@ -91,23 +144,17 @@ export default function ReviewsPage({ params }: Props) {
 
                             <p className={styles.content}>{review.content}</p>
 
-                            {review.photos && review.photos.length > 0 && (
-                                <div className={styles.photoGrid}>
-                                    {review.photos.map((photo, idx) => (
-                                        <div key={idx} className={styles.photoItem}>
-                                            <img src={photo} alt={`Review ${idx}`} />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {review.reply && (
+                            {/* Owner Reply */}
+                            {review.owner_reply && (
                                 <div className={styles.replyBox}>
                                     <div className={styles.replyHeader}>
-                                        <span className={styles.replyTitle}>Response from {getL(shop.name)}</span>
-                                        <span className={styles.replyDate}>{review.replyDate}</span>
+                                        <span className={styles.replyTitle}>
+                                            <MessageSquare size={14} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                                            Response from {getL(shop.name)}
+                                        </span>
+                                        <span className={styles.replyDate}>{review.reply_at && formatDate(review.reply_at)}</span>
                                     </div>
-                                    <p className={styles.replyContent}>{review.reply}</p>
+                                    <p className={styles.replyContent}>{review.owner_reply}</p>
                                 </div>
                             )}
                         </div>

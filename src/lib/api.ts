@@ -78,6 +78,8 @@ export interface Review {
     content: string;
     created_at: string;
     profiles?: { name: string; email: string };
+    owner_reply?: string | null;
+    reply_at?: string | null;
 }
 
 export interface ShopsResponse {

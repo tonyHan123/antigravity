@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
-import { MapPin, Star, Clock } from 'lucide-react';
+import { MapPin, Star, Clock, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import BookingWidget from '@/components/features/BookingWidget';
@@ -188,10 +188,13 @@ export default function ShopPage({ params }: Props) {
                                     <CouponItem key={coupon.id} coupon={{
                                         id: coupon.id,
                                         code: coupon.code,
+                                        name: coupon.code, // Use code as display name
+                                        description: `${coupon.discount_type === 'percent' ? coupon.discount_value + '% OFF' : '₩' + coupon.discount_value.toLocaleString() + ' OFF'}`,
                                         discountType: coupon.discount_type,
                                         discountValue: coupon.discount_value,
-                                        minPurchase: coupon.min_purchase,
                                         validUntil: coupon.valid_until,
+                                        shopId: shop.id,
+                                        shopName: shop.name,
                                     }} />
                                 ))}
                             </div>
@@ -224,6 +227,22 @@ export default function ShopPage({ params }: Props) {
                                     <p style={{ color: '#444', fontSize: '0.95rem', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                         {review.content}
                                     </p>
+
+                                    {/* Owner Reply */}
+                                    {review.owner_reply && (
+                                        <div className={styles.replyBox}>
+                                            <div className={styles.replyHeader}>
+                                                <span className={styles.replyTitle}>
+                                                    <MessageSquare size={12} style={{ verticalAlign: 'middle' }} />
+                                                    From {getL(shop.name)}
+                                                </span>
+                                                <span className={styles.replyDate}>
+                                                    {review.reply_at && new Date(review.reply_at).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            <p className={styles.replyContent}>{review.owner_reply}</p>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
 
