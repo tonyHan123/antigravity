@@ -1,7 +1,39 @@
 export type Language = 'en' | 'jp' | 'cn' | 'id' | 'hi';
 export type LocalizedString = string | Partial<Record<Language, string>>;
 
-export type Category = 'Hair' | 'Nail' | 'Massage' | 'Makeup' | 'Spa';
+// Main Categories
+export type MainCategory = 'k-beauty' | 'skin-laser' | 'health' | 'tourism' | 'stay';
+
+// Subcategories
+export type KBeautySubCategory = 'hair' | 'nail' | 'massage' | 'makeup';
+export type HealthSubCategory = 'rehab' | 'gym';
+export type SubCategory = KBeautySubCategory | HealthSubCategory | null;
+
+// Legacy compatibility
+export type Category = 'Hair' | 'Nail' | 'Massage' | 'Makeup' | 'Spa' | string;
+
+export const CATEGORY_CONFIG = {
+    'k-beauty': {
+        label: 'K-Beauty',
+        subcategories: ['hair', 'nail', 'massage', 'makeup'] as const
+    },
+    'skin-laser': {
+        label: 'Skin & Laser',
+        subcategories: [] as const
+    },
+    'health': {
+        label: 'Health',
+        subcategories: ['rehab', 'gym'] as const
+    },
+    'tourism': {
+        label: 'Tourism',
+        subcategories: [] as const
+    },
+    'stay': {
+        label: 'Stay',
+        subcategories: [] as const
+    }
+} as const;
 
 export interface Service {
     id: string;
@@ -28,6 +60,8 @@ export interface Shop {
     ownerId: string;
     name: LocalizedString;
     category: Category;
+    mainCategory?: MainCategory;
+    subCategory?: SubCategory;
     region: LocalizedString; // e.g., 'Seoul', 'Busan'
     address: LocalizedString;
     rating: number; // 0-5

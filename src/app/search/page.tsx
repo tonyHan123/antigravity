@@ -13,6 +13,8 @@ type SortOption = 'recommended' | 'rating' | 'price';
 function SearchContent() {
     const searchParams = useSearchParams();
     const categoryQuery = searchParams.get('category');
+    const mainQuery = searchParams.get('main');
+    const subQuery = searchParams.get('sub');
     const locationQuery = searchParams.get('location');
     const { language } = useLanguage();
 
@@ -35,6 +37,8 @@ function SearchContent() {
             try {
                 const data = await getShops({
                     category: categoryQuery || undefined,
+                    main: mainQuery || undefined,
+                    sub: subQuery || undefined,
                     location: locationQuery || undefined,
                     sort: sortBy,
                 });
@@ -46,7 +50,7 @@ function SearchContent() {
             }
         }
         fetchShops();
-    }, [categoryQuery, locationQuery, sortBy]);
+    }, [categoryQuery, mainQuery, subQuery, locationQuery, sortBy]);
 
     // Sort shops client-side for immediate feedback
     const sortedShops = [...shops].sort((a, b) => {
@@ -97,7 +101,56 @@ function SearchContent() {
             </header>
 
             <div style={{ marginBottom: '40px' }}>
-                <SearchWidget />
+                <SearchWidget key={searchParams.toString()} />
+
+                {/* Subcategory Quick Links */}
+                {(() => {
+                    const mainQuery = searchParams.get('main');
+                    const subQuery = searchParams.get('sub');
+
+                    // Define subcategories for each main category
+                    const subcategories: Record<string, string[]> = {
+                        'k-beauty': ['Hair', 'Nail', 'Massage', 'Makeup'],
+                        'health': ['Rehab', 'Gym'],
+                    };
+
+                    const subs = mainQuery ? subcategories[mainQuery] : null;
+
+                    if (!subs || subs.length === 0) return null;
+
+                    return (
+                        <div style={{
+                            marginTop: '16px',
+                            display: 'flex',
+                            gap: '8px',
+                            justifyContent: 'center',
+                            flexWrap: 'wrap'
+                        }}>
+                            {subs.map((sub) => {
+                                const isActive = subQuery?.toLowerCase() === sub.toLowerCase();
+                                return (
+                                    <a
+                                        key={sub}
+                                        href={`/search?main=${mainQuery}&sub=${sub.toLowerCase()}`}
+                                        style={{
+                                            background: isActive ? '#333' : '#f5f5f5',
+                                            padding: '8px 16px',
+                                            borderRadius: '20px',
+                                            color: isActive ? 'white' : '#333',
+                                            textDecoration: 'none',
+                                            fontSize: '0.9rem',
+                                            fontWeight: 500,
+                                            border: isActive ? '1px solid #333' : '1px solid #eee',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        {sub}
+                                    </a>
+                                );
+                            })}
+                        </div>
+                    );
+                })()}
             </div>
 
             {/* Sorting Bar */}

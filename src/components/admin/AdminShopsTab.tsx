@@ -1,18 +1,22 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Search, MapPin, Phone, CheckCircle, X, Image as ImageIcon, Upload } from 'lucide-react';
+import { Plus, Search, MapPin, Phone, CheckCircle, X, Image as ImageIcon, Upload, User } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import styles from '@/components/dashboard/OwnerDashboard.module.css'; // Reuse owner dashboard styles
+import styles from '@/components/dashboard/OwnerDashboard.module.css';
+import { CATEGORY_CONFIG } from '@/types';
+import KakaoAddressSearch from '@/components/features/KakaoAddressSearch';
 
 export default function AdminShopsTab() {
     const [shops, setShops] = useState<any[]>([]);
+    const [owners, setOwners] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
 
     // Register Form State
     const [formData, setFormData] = useState<any>({
-        category: 'Hair'
+        mainCategory: 'k-beauty',
+        subCategory: 'hair'
     });
     const fileInputRef = useRef<HTMLInputElement>(null);
     const businessLicenseRef = useRef<HTMLInputElement>(null);
@@ -20,6 +24,7 @@ export default function AdminShopsTab() {
 
     useEffect(() => {
         loadShops();
+        loadOwners();
     }, []);
 
     const loadShops = async () => {
@@ -33,6 +38,18 @@ export default function AdminShopsTab() {
             console.error('Failed to load shops:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadOwners = async () => {
+        try {
+            const res = await fetch('/api/admin/users?role=owner');
+            if (res.ok) {
+                const data = await res.json();
+                setOwners(data.users || []);
+            }
+        } catch (error) {
+            console.error('Failed to load owners:', error);
         }
     };
 
@@ -71,21 +88,34 @@ export default function AdminShopsTab() {
     };
 
     const handleRegister = async () => {
+        // Validation
+        if (!formData.nameEn) {
+            alert('Shop Name is required');
+            return;
+        }
+
         try {
             const payload = {
                 name: { en: formData.nameEn },
-                description: { en: formData.descriptionEn },
-                address: { en: formData.addressEn },
-                region: { en: formData.regionEn },
-                category: formData.category,
-                contact_phone: formData.contactPhone,
-                business_number: formData.businessNumber,
-                representative_name: formData.representativeName,
-                business_license_url: formData.business_license_url,
-                bank_name: formData.bankName,
-                bank_account: formData.bankAccount,
-                bank_holder: formData.bankHolder,
-                image_url: formData.image_url
+                description: { en: formData.descriptionEn || '' },
+                address: { en: formData.addressEn || '' },
+                region: { en: formData.regionEn || 'Seoul' },
+                main_category: formData.mainCategory,
+                sub_category: formData.subCategory || null,
+                owner_id: formData.ownerId || null,
+                contact_phone: formData.contactPhone || '',
+                business_number: formData.businessNumber || '',
+                representative_name: formData.representativeName || '',
+                business_license_url: formData.business_license_url || null,
+                bank_name: formData.bankName || '',
+                bank_account: formData.bankAccount || '',
+                bank_holder: formData.bankHolder || '',
+                image_url: formData.image_url || null,
+                // Coordinates (will be set later with geocoding)
+                latitude: formData.latitude || null,
+                longitude: formData.longitude || null,
+                road_address: formData.roadAddress || null,
+                postal_code: formData.postalCode || null
             };
 
             const res = await fetch('/api/admin/shops', {
@@ -97,7 +127,7 @@ export default function AdminShopsTab() {
             if (res.ok) {
                 alert('Shop registered successfully!');
                 setShowRegisterModal(false);
-                setFormData({ category: 'Hair' }); // Reset
+                setFormData({ mainCategory: 'k-beauty', subCategory: 'hair' }); // Reset
                 loadShops();
             } else {
                 const err = await res.json();
@@ -189,27 +219,105 @@ export default function AdminShopsTab() {
                                     <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={(e) => handleImageUpload(e, 'imageUrl')} accept="image/*" />
                                 </div>
 
+                                {/* Owner Selection */}
                                 <div className={styles.inputGroup}>
-                                    <label>Shop Name (EN)</label>
-                                    <input name="nameEn" value={formData.nameEn || ''} onChange={handleInputChange} className={styles.input} />
-                                </div>
-                                <div className={styles.inputGroup}>
-                                    <label>Category</label>
-                                    <select name="category" value={formData.category} onChange={handleInputChange} className={styles.select}>
-                                        <option value="Hair">Hair</option>
-                                        <option value="Nail">Nail</option>
-                                        <option value="Massage">Massage</option>
-                                        <option value="Makeup">Makeup</option>
-                                        <option value="Spa">Spa</option>
+                                    <label><User size={14} style={{ marginRight: 4 }} /> Assign Owner (Optional)</label>
+                                    <select name="ownerId" value={formData.ownerId || ''} onChange={handleInputChange} className={styles.select}>
+                                        <option value="">-- No Owner (Assign Later) --</option>
+                                        {owners.map((owner: any) => (
+                                            <option key={owner.id} value={owner.id}>
+                                                {owner.name || owner.email} ({owner.email})
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
+
                                 <div className={styles.inputGroup}>
-                                    <label>Region (EN)</label>
-                                    <input name="regionEn" value={formData.regionEn || ''} onChange={handleInputChange} className={styles.input} />
+                                    <label>Shop Name (EN) *</label>
+                                    <input name="nameEn" value={formData.nameEn || ''} onChange={handleInputChange} className={styles.input} placeholder="e.g., Jenny House Premium" required />
+                                </div>
+
+                                {/* Category Selection */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                    <div className={styles.inputGroup}>
+                                        <label>Main Category *</label>
+                                        <select
+                                            name="mainCategory"
+                                            value={formData.mainCategory || 'k-beauty'}
+                                            onChange={(e) => {
+                                                const mainCat = e.target.value;
+                                                const config = CATEGORY_CONFIG[mainCat as keyof typeof CATEGORY_CONFIG];
+                                                const firstSub = config?.subcategories?.[0] || '';
+                                                setFormData((prev: any) => ({
+                                                    ...prev,
+                                                    mainCategory: mainCat,
+                                                    subCategory: firstSub
+                                                }));
+                                            }}
+                                            className={styles.select}
+                                        >
+                                            {Object.entries(CATEGORY_CONFIG).map(([key, config]) => (
+                                                <option key={key} value={key}>{config.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label>Sub Category</label>
+                                        <select
+                                            name="subCategory"
+                                            value={formData.subCategory || ''}
+                                            onChange={handleInputChange}
+                                            className={styles.select}
+                                            disabled={!CATEGORY_CONFIG[formData.mainCategory as keyof typeof CATEGORY_CONFIG]?.subcategories?.length}
+                                        >
+                                            <option value="">-- None --</option>
+                                            {CATEGORY_CONFIG[formData.mainCategory as keyof typeof CATEGORY_CONFIG]?.subcategories?.map((sub: string) => (
+                                                <option key={sub} value={sub}>{sub.charAt(0).toUpperCase() + sub.slice(1)}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                                 <div className={styles.inputGroup}>
-                                    <label>Address (EN)</label>
-                                    <input name="addressEn" value={formData.addressEn || ''} onChange={handleInputChange} className={styles.input} />
+                                    <label>Region</label>
+                                    <select name="regionEn" value={formData.regionEn || 'Seoul'} onChange={handleInputChange} className={styles.select}>
+                                        <option value="Seoul">Seoul</option>
+                                        <option value="Busan">Busan</option>
+                                        <option value="Incheon">Incheon</option>
+                                        <option value="Daegu">Daegu</option>
+                                        <option value="Daejeon">Daejeon</option>
+                                        <option value="Gwangju">Gwangju</option>
+                                        <option value="Ulsan">Ulsan</option>
+                                        <option value="Jeju">Jeju</option>
+                                    </select>
+                                </div>
+
+                                {/* Location Section */}
+                                <div className={styles.inputGroup}>
+                                    <label style={{ marginBottom: 8 }}>📍 Location (Address & Map)</label>
+                                    <KakaoAddressSearch
+                                        onAddressSelect={(data) => {
+                                            setFormData((prev: any) => ({
+                                                ...prev,
+                                                addressEn: data.roadAddress,
+                                                roadAddress: data.roadAddress,
+                                                postalCode: data.zonecode,
+                                                latitude: data.latitude,
+                                                longitude: data.longitude
+                                            }));
+                                        }}
+                                        showMap={true}
+                                    />
+                                </div>
+
+                                <div className={styles.inputGroup}>
+                                    <label>Detail Address (상세주소)</label>
+                                    <input
+                                        name="detailAddress"
+                                        value={formData.detailAddress || ''}
+                                        onChange={handleInputChange}
+                                        className={styles.input}
+                                        placeholder="e.g., 2층 201호"
+                                    />
                                 </div>
                                 <div className={styles.inputGroup}>
                                     <label>Description (EN)</label>

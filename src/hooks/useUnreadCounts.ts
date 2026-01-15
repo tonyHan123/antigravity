@@ -5,6 +5,7 @@ interface UnreadCounts {
     unreadMessages: number;
     unreadNotifications: number;
     newReviews: number;
+    pendingModeration: number;
     totalUnread: number;
     loading: boolean;
 }
@@ -14,6 +15,7 @@ export function useUnreadCounts() {
         unreadMessages: 0,
         unreadNotifications: 0,
         newReviews: 0,
+        pendingModeration: 0,
         totalUnread: 0,
         loading: true
     });
@@ -27,6 +29,7 @@ export function useUnreadCounts() {
                     unreadMessages: data.unreadMessages || 0,
                     unreadNotifications: data.unreadNotifications || 0,
                     newReviews: data.newReviews || 0,
+                    pendingModeration: data.pendingModeration || 0,
                     totalUnread: data.totalUnread || 0,
                     loading: false
                 });

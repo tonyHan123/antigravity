@@ -3,12 +3,17 @@ import { Star, MapPin, ThumbsUp } from 'lucide-react';
 import styles from './ShopCardHorizontal.module.css';
 import Button from '@/components/ui/Button';
 import LikeButton from './LikeButton';
+import { CATEGORY_CONFIG } from '@/types';
 
 interface ShopCardHorizontalProps {
     shop: {
         id: string;
         name: string;
         category: string;
+        mainCategory?: string; // Add optional fields
+        subCategory?: string;
+        main_category?: string; // Add snake_case fallback
+        sub_category?: string;
         region: string;
         address?: string;
         rating: number;
@@ -27,6 +32,19 @@ export default function ShopCardHorizontal({ shop }: ShopCardHorizontalProps) {
     const minPrice = hasPrices ? Math.min(...prices) : 0;
     const originalPrice = hasPrices ? Math.round(minPrice * 1.2) : 0;
 
+    // Determine category label
+    const main = shop.mainCategory || shop.main_category;
+    const sub = shop.subCategory || shop.sub_category;
+    let categoryDisplay = shop.category;
+
+    if (main && CATEGORY_CONFIG[main as keyof typeof CATEGORY_CONFIG]) {
+        const config = CATEGORY_CONFIG[main as keyof typeof CATEGORY_CONFIG];
+        categoryDisplay = config.label;
+        if (sub) {
+            categoryDisplay += ` › ${sub.charAt(0).toUpperCase() + sub.slice(1)}`;
+        }
+    }
+
     return (
         <Link href={`/shop/${shop.id}`} className={styles.card}>
             {/* Left: Image */}
@@ -43,7 +61,7 @@ export default function ShopCardHorizontal({ shop }: ShopCardHorizontalProps) {
                 {/* Center: Info */}
                 <div className={styles.infoSection}>
                     <div className={styles.header}>
-                        <span className={styles.category}>{shop.category} • {shop.region}</span>
+                        <span className={styles.category}>{categoryDisplay} • {shop.region}</span>
                         <h3 className={styles.name}>{shop.name}</h3>
                     </div>
 

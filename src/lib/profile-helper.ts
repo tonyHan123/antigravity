@@ -14,13 +14,13 @@
  */
 
 import { createServerClient } from '@/lib/supabase';
-import { randomUUID } from 'crypto';
+import type { Profile } from '@/types/supabase';
 
 // ============================================
 // 데모 계정 설정 (상수로 관리하여 일관성 유지)
 // ============================================
 
-const DEMO_ACCOUNTS: Record<string, { id: string; role: 'user' | 'owner' | 'admin'; name: string }> = {
+export const DEMO_ACCOUNTS: Record<string, { id: string; role: 'user' | 'owner' | 'admin'; name: string }> = {
     'user@example.com': {
         id: '11111111-1111-1111-1111-111111111111',
         role: 'user',
@@ -59,7 +59,7 @@ export async function getOrCreateProfile(
     supabase: ReturnType<typeof createServerClient>,
     email: string,
     name?: string
-) {
+): Promise<Profile> {
     // --------------------------------------------
     // STEP 1: 기존 프로필 조회
     // --------------------------------------------
@@ -88,7 +88,7 @@ export async function getOrCreateProfile(
     const demoConfig = DEMO_ACCOUNTS[email];
 
     const newProfile = {
-        id: demoConfig?.id || randomUUID(),
+        id: demoConfig?.id || crypto.randomUUID(),
         email,
         name: name || demoConfig?.name || email.split('@')[0],
         role: demoConfig?.role || 'user',

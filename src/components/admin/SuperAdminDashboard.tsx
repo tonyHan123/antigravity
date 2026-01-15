@@ -5,7 +5,7 @@ import { LayoutDashboard, Users, Store, DollarSign, AlertCircle } from 'lucide-r
 import styles from './SuperAdminDashboard.module.css';
 import GlobalOverview from './GlobalOverview';
 import AdminUsersTab from './AdminUsersTab';
-import ShopManagementList from './ShopManagementList';
+import AdminShopsTab from './AdminShopsTab';
 import SettlementManager from './SettlementManager';
 import ModerationManager from './ModerationManager';
 import AdminMessagesTab from './tabs/AdminMessagesTab';
@@ -13,7 +13,7 @@ import AdminMessagesTab from './tabs/AdminMessagesTab';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 
 export default function SuperAdminDashboard() {
-    const { unreadMessages } = useUnreadCounts();
+    const { unreadMessages, pendingModeration } = useUnreadCounts();
     const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'shops' | 'settlement' | 'moderation' | 'messages'>('overview');
 
     return (
@@ -37,8 +37,19 @@ export default function SuperAdminDashboard() {
                     <button className={activeTab === 'settlement' ? styles.active : ''} onClick={() => setActiveTab('settlement')}>
                         <DollarSign size={18} /> Settlement
                     </button>
-                    <button className={activeTab === 'moderation' ? styles.active : ''} onClick={() => setActiveTab('moderation')}>
-                        <AlertCircle size={18} /> Moderation
+                    <button className={activeTab === 'moderation' ? styles.active : ''} onClick={() => setActiveTab('moderation')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <AlertCircle size={18} /> Moderation
+                        </div>
+                        {pendingModeration > 0 && (
+                            <span style={{
+                                background: '#ff4d4f', color: '#fff', fontSize: '0.75rem',
+                                fontWeight: 600, padding: '2px 8px', borderRadius: 999,
+                                lineHeight: 1
+                            }}>
+                                {pendingModeration > 99 ? '99+' : pendingModeration}
+                            </span>
+                        )}
                     </button>
                     <button className={activeTab === 'messages' ? styles.active : ''} onClick={() => setActiveTab('messages')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -73,7 +84,7 @@ export default function SuperAdminDashboard() {
                 <div className={styles.content}>
                     {activeTab === 'overview' && <GlobalOverview />}
                     {activeTab === 'users' && <AdminUsersTab />}
-                    {activeTab === 'shops' && <ShopManagementList />}
+                    {activeTab === 'shops' && <AdminShopsTab />}
                     {activeTab === 'settlement' && <SettlementManager />}
                     {activeTab === 'moderation' && <ModerationManager />}
                     {activeTab === 'messages' && <AdminMessagesTab />}

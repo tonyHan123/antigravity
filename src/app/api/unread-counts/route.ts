@@ -75,10 +75,24 @@ export async function GET() {
             }
         }
 
+        // 4. Pending Moderation Requests (for admin only)
+        let pendingModeration = 0;
+        if (profile.role === 'admin') {
+            const { count: modCount, error: modError } = await supabase
+                .from('review_moderation_requests')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'pending');
+
+            if (!modError) {
+                pendingModeration = modCount || 0;
+            }
+        }
+
         return NextResponse.json({
             unreadMessages: unreadMessages || 0,
             unreadNotifications,
             newReviews,
+            pendingModeration,
             totalUnread: (unreadMessages || 0) + unreadNotifications
         });
 

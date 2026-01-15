@@ -1,22 +1,22 @@
+"use client";
 
-import { signIn, signOut, auth } from "@/auth";
+import { useSession, signIn, signOut } from "next-auth/react";
 import Link from 'next/link';
 import { User, LogOut } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
-export default async function UserButton() {
-    const session = await auth();
+export default function UserButton() {
+    const { data: session, status } = useSession();
+
+    if (status === "loading") {
+        return <Button variant="ghost" size="sm" disabled>...</Button>;
+    }
 
     if (!session?.user) {
         return (
-            <form
-                action={async () => {
-                    "use server";
-                    await signIn();
-                }}
-            >
-                <Button variant="ghost" size="sm">Log In</Button>
-            </form>
+            <Button variant="ghost" size="sm" onClick={() => signIn()}>
+                Log In
+            </Button>
         );
     }
 
@@ -29,16 +29,9 @@ export default async function UserButton() {
                 </Button>
             </Link>
 
-            <form
-                action={async () => {
-                    "use server";
-                    await signOut();
-                }}
-            >
-                <Button variant="ghost" size="sm" title="Sign Out">
-                    <LogOut size={16} />
-                </Button>
-            </form>
+            <Button variant="ghost" size="sm" title="Sign Out" onClick={() => signOut()}>
+                <LogOut size={16} />
+            </Button>
         </div>
     );
 }

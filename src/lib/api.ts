@@ -92,11 +92,15 @@ export interface ShopResponse {
 
 export async function getShops(params?: {
     category?: string;
+    main?: string;
+    sub?: string;
     location?: string;
     sort?: string;
 }): Promise<Shop[]> {
     const searchParams = new URLSearchParams();
     if (params?.category) searchParams.set('category', params.category);
+    if (params?.main) searchParams.set('main', params.main);
+    if (params?.sub) searchParams.set('sub', params.sub);
     if (params?.location) searchParams.set('location', params.location);
     if (params?.sort) searchParams.set('sort', params.sort);
 

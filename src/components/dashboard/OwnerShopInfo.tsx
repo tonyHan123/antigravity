@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Upload, MapPin, Info, Image as ImageIcon, X, Loader2, Plus, Clock, Tag, Trash2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import { CATEGORY_CONFIG } from '@/types';
 
 // Types (re-defined locally or imported)
 interface OwnerShopInfoProps {
@@ -232,8 +233,15 @@ export default function OwnerShopInfo({ shopId }: OwnerShopInfoProps) {
         if (!shop) return;
         setSaving(true);
         try {
-            const { services, coupons, reviews, ...shopData } = shop;
-            const payload = { ...shopData, images: images };
+            const { services, coupons, reviews, mainCategory, subCategory, ...shopData } = shop;
+
+            // Transform camelCase to snake_case for DB
+            const payload = {
+                ...shopData,
+                images: images,
+                main_category: mainCategory || shop.main_category,
+                sub_category: subCategory || shop.sub_category,
+            };
 
             const res = await fetch(`/api/shops/${shopId}`, {
                 method: 'PATCH',
@@ -285,13 +293,32 @@ export default function OwnerShopInfo({ shopId }: OwnerShopInfoProps) {
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
                             <div>
-                                <label style={labelStyle}>Category</label>
-                                <select style={inputStyle} value={shop.category} onChange={(e) => handleInputChange('category', e.target.value)}>
-                                    <option value="Hair">Hair</option>
-                                    <option value="Nail">Nail</option>
-                                    <option value="Massage">Massage</option>
-                                    <option value="Makeup">Makeup</option>
-                                    <option value="Spa">Spa</option>
+                                <label style={labelStyle}>Main Category</label>
+                                <select
+                                    style={inputStyle}
+                                    value={shop.mainCategory || shop.main_category || 'k-beauty'}
+                                    onChange={(e) => {
+                                        handleInputChange('mainCategory', e.target.value);
+                                        handleInputChange('subCategory', '');
+                                    }}
+                                >
+                                    {Object.entries(CATEGORY_CONFIG).map(([key, conf]) => (
+                                        <option key={key} value={key}>{conf.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label style={labelStyle}>Sub Category</label>
+                                <select
+                                    style={inputStyle}
+                                    value={shop.subCategory || shop.sub_category || ''}
+                                    onChange={(e) => handleInputChange('subCategory', e.target.value)}
+                                    disabled={!shop.mainCategory && !shop.main_category || CATEGORY_CONFIG[(shop.mainCategory || shop.main_category) as keyof typeof CATEGORY_CONFIG]?.subcategories.length === 0}
+                                >
+                                    <option value="">None</option>
+                                    {(shop.mainCategory || shop.main_category) && CATEGORY_CONFIG[(shop.mainCategory || shop.main_category) as keyof typeof CATEGORY_CONFIG]?.subcategories.map((sub: string) => (
+                                        <option key={sub} value={sub}>{sub.charAt(0).toUpperCase() + sub.slice(1)}</option>
+                                    ))}
                                 </select>
                             </div>
                             <div>

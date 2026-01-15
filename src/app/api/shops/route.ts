@@ -16,6 +16,8 @@ export async function GET(request: NextRequest) {
         const searchParams = request.nextUrl.searchParams;
 
         const category = searchParams.get('category');
+        const mainCategory = searchParams.get('main');
+        const subCategory = searchParams.get('sub');
         const location = searchParams.get('location');
         const sort = searchParams.get('sort') || 'recommended';
 
@@ -29,13 +31,23 @@ export async function GET(request: NextRequest) {
             .eq('status', 'approved');
 
         // Apply filters
-        if (category) {
-            query = query.ilike('category', category);
+        // 1. New Hierarchical Filters
+        if (mainCategory) {
+            query = query.eq('main_category', mainCategory);
+        }
+        if (subCategory) {
+            query = query.eq('sub_category', subCategory);
+        }
+
+        // 2. Legacy Category Filter (Backward Compatibility)
+        // If 'category' is passed (e.g. 'Hair'), search in both old and new columns
+        if (category && !mainCategory && !subCategory) {
+            query = query.or(`category.ilike.${category},sub_category.ilike.${category}`);
         }
 
         if (location) {
-            // Search in JSONB region field
-            query = query.or(`region->en.ilike.%${location}%,region->jp.ilike.%${location}%`);
+            // Use ->> to extract as TEXT for ilike comparison
+            query = query.or(`region->>en.ilike.%${location}%,region->>jp.ilike.%${location}%`);
         }
 
         // Apply sorting
